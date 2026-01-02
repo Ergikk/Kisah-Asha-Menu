@@ -11,20 +11,16 @@ export default function App() {
 
   useEffect(() => {
     const token = localStorage.getItem('asha_admin_token')
-    if (token && parseInt(token.split('_')[2]) > Date.now() - 24*60*60*1000) {
+    if (token && parseInt(token.split('_')[0]) > Date.now() - 24*60*60*1000) {
       setIsAuthenticated(true)
     }
   }, [])
 
   return (
     <div className="min-h-screen bg-[#6f7f72] text-white">
-      <div className="mx-auto max-w-[430px] px-4 py-5">
+      <div className="mx-auto max-w-[430px] sm:max-w-[600px] md:max-w-[800px] lg:max-w-[1000px] xl:max-w-[1200px] px-4 py-5">
         <header className="flex items-center justify-between bg-black/40 backdrop-blur-sm rounded-full px-5 py-3 mb-5">
-<<<<<<< HEAD
           <img src={logo} alt="Asha Logo" className="h-5 w-auto" />
-=======
-          <img src={logo} alt="Asha Logo" className="h-8 w-auto" />
->>>>>>> 7a70924aa02c0e26959d2212420afa198c8e47ab
           <div className="font-semibold tracking-wide text-lg">
             {isAdmin ? 'Admin' : 'asha'}
           </div>

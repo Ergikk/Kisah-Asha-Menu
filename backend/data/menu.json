@@ -12,19 +12,6 @@
           "sortOrder": 1,
           "items": [
             {
-<<<<<<< HEAD
-=======
-              "id": "chicken",
-              "name": "Chicken",
-              "price": 36000,
-              "descriptionId": "ayam yang dimasak dengan rosemary dan saus rempah yang creamy disajikan\nbersama croissant.",
-              "descriptionEn": "chicken cooked with rosemary and a creamy spice sauce served with a\ncroissant.",
-              "image": "/images/1767293527721-657954534.png",
-              "isAvailable": true,
-              "sortOrder": 1
-            },
-            {
->>>>>>> 7a70924aa02c0e26959d2212420afa198c8e47ab
               "id": "chicken-creamy-rosemary-with-croissant",
               "name": "Chicken Creamy Rosemary with Croissant",
               "price": 36000,
@@ -40,7 +27,7 @@
               "price": 36000,
               "descriptionId": "askaoskaosk",
               "descriptionEn": "aksoaksoaks",
-              "image": "",
+              "image": "/images/1767357525006-357874687.png",
               "isAvailable": true,
               "sortOrder": 1
             },
@@ -51,12 +38,14 @@
               "descriptionId": "akowakowkaowk",
               "descriptionEn": "akwokawokawok",
               "image": "/images/1767344085000-556472261.jpg",
-              "isAvailable": true,
+              "isAvailable": false,
               "sortOrder": 1
             }
           ]
         }
-      ]
+      ],
+      "cardBg": "#803932",
+      "headerImage": ""
     },
     {
       "id": "food",

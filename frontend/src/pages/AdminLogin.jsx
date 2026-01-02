@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-
-const ADMIN_PASSWORD = 'asha2026'
+import { adminLogin } from '../api/client.js'
 
 export default function AdminLogin() {
   const [password, setPassword] = useState('')
@@ -10,16 +9,17 @@ export default function AdminLogin() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError('')
 
-    // Simple password check
-    if (password === ADMIN_PASSWORD) {
-      localStorage.setItem('asha_admin_token', `valid_token_${Date.now()}`)
+    try {
+      const { token, level } = await adminLogin(password)
+      localStorage.setItem('asha_admin_token', token)
+      localStorage.setItem('asha_admin_level', level)
       navigate('/admin')
-    } else {
+    } catch (error) {
       setError('Password salah!')
       setLoading(false)
     }

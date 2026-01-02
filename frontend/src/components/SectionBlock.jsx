@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react'
 import Modal from './Modal.jsx'
-<<<<<<< HEAD
-import { RiArrowDownWideLine,RiArrowUpWideLine } from "react-icons/ri";
+import { RiArrowDownWideLine,RiArrowUpWideLine } from "react-icons/ri"
 
 const SECTION_STYLES = {
   breakfast: {
@@ -9,38 +8,24 @@ const SECTION_STYLES = {
     headerText: 'text-white',
     subtitleText: 'text-white/80',
     headerImage: '/images/breakfast-bg.png',
+    categoryActive: 'bg-[#ED473F] text-white',
+    categoryInactive: 'bg-orange-100 text-orange-900 hover:bg-orange-100'
   },
   food: {
     cardBg: '#F4F0E7',
     headerText: 'text-black',
     subtitleText: 'text-black/80',
     headerImage: '/images/food-bg.png',
+    categoryActive: 'bg-[#647767] text-white',
+    categoryInactive: 'bg-orange-50 text-[#647767] hover:bg-orange-100'
   },
   beverage: {
     cardBg: '#ED473F', 
-    headerText: 'text-white',
-    subtitleText: 'text-white/80',
-=======
-
-const SECTION_STYLES = {
-  breakfast: {
-    cardBg: '#813932',
-    headerText: 'text-white',
-    subtitleText: 'text-white/80',
-    headerImage: '/images/breakfast-bg.png', // put your real path here
-  },
-  food: {
-    cardBg: '#803932',
-    headerText: 'text-white',
-    subtitleText: 'text-white/70',
-    headerImage: '/images/food-bg.png',
-  },
-  beverage: {
-    cardBg: '#803932',        // outer card bg
     headerText: 'text-[#ED473F]',
-    subtitleText: 'text-[#ED473F]/80',
->>>>>>> 7a70924aa02c0e26959d2212420afa198c8e47ab
+    subtitleText: 'text-[#ED473F]',
     headerImage: '/images/beverage-bg.png',
+    categoryActive: 'bg[#ED473F] text-white',
+    categoryInactive: 'bg-[#F4F0E7] text-orange-900 hover:bg-orange-100'
   },
 }
 
@@ -49,14 +34,8 @@ function getSectionStyle(section) {
 }
 
 export default function SectionBlock({ section }) {
-<<<<<<< HEAD
   const [isExpanded, setIsExpanded] = useState(false)  // NEW: Collapsed by default
   const [activeCategoryId, setActiveCategoryId] = useState(section.categories?.[0]?.id || null)
-=======
-  const [activeCategoryId, setActiveCategoryId] = useState(
-    section.categories?.[0]?.id || null,
-  )
->>>>>>> 7a70924aa02c0e26959d2212420afa198c8e47ab
   const [openItem, setOpenItem] = useState(null)
 
   const categories = section.categories || []
@@ -69,37 +48,24 @@ export default function SectionBlock({ section }) {
 
   const style = getSectionStyle(section)
 
-<<<<<<< HEAD
   const toggleSection = () => {
     setIsExpanded(!isExpanded)
     if (!isExpanded) setActiveCategoryId(section.categories?.[0]?.id || null)  // Reset on expand
   }
 
   return (
-    <section className="rounded-3xl p-5" style={{ backgroundColor: style.cardBg }}>
+    <section className="rounded-3xl" style={{ backgroundColor: style.cardBg }}>
       {/* COLLAPSIBLE HEADER - Always visible */}
       <div 
         className="rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.01] transition-all duration-200 clicked:scale-[1.01] transition-all duration-200"
         onClick={toggleSection}
       >
         <div
-          className="relative h-28"
-=======
-  return (
-    <section
-      className="rounded-3xl p-5"
-      style={{ backgroundColor: style.cardBg }}
-    >
-      {/* Hero with image background */}
-      <div className="rounded-2xl overflow-hidden mb-5">
-        <div
-          className="relative h-32"
->>>>>>> 7a70924aa02c0e26959d2212420afa198c8e47ab
+          className="relative h-40"
           style={{
             backgroundImage: `url(${style.headerImage})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-<<<<<<< HEAD
           }}
         >
           <div className="absolute inset-0" />
@@ -113,10 +79,6 @@ export default function SectionBlock({ section }) {
                   {section.subtitle}
                 </p>
               )}
-              {/* Expand indicator */}
-              <div className="mt-2 opacity-90 flex items-center justify-center">
-                {isExpanded ? <RiArrowUpWideLine /> : <RiArrowDownWideLine />} 
-              </div>
             </div>
           </div>
         </div>
@@ -125,17 +87,17 @@ export default function SectionBlock({ section }) {
       {/* COLLAPSIBLE CONTENT - Hidden by default */}
       <div className={`overflow-hidden transition-all duration-500 ease-out ${isExpanded ? 'opacity-100' : 'max-h-0 opacity-0'}`}>
         {/* Category tabs - Only when expanded */}
-        <div className="space-y-2 mt-4 mb-4 px-2">
+        <div className="space-y-2 mt-4 mb-4 px-5">
           {categories.map((cat) => {
             const isActive = activeCategoryId === cat.id
             return (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategoryId(cat.id)}
-                className={`w-full rounded-xl py-3 px-4 text-center font-semibold transition-all duration-200 shadow-md ${
+                className={`w-full rounded-xl py-3 px-4 text-center font-semibold shadow-md transition-all duration-200 ${
                   isActive
-                    ? 'bg-[#ED473F] text-white shadow-xl scale-[1.02]'
-                    : 'bg-white/10 text-white hover:bg-white/20 hover:text-white/90 shadow-lg hover:shadow-xl'
+                    ? `${style.categoryActive} shadow-xl scale-[1.02]`
+                    : `${style.categoryInactive} shadow-lg hover:shadow-xl`
                 }`}
               >
                 {cat.name}
@@ -145,18 +107,18 @@ export default function SectionBlock({ section }) {
         </div>
 
         {/* Items grid - Only when expanded */}
-        <div className="flex-1 grid grid-cols-2 gap-3 pt-2">
+        <div className="flex-1 grid grid-cols-2 gap-3 pt-2 px-5 pb-5">
           {activeItems.length > 0 ? (
             activeItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setOpenItem(item)}
-                className="group rounded-2xl bg-[#ead7c6] text-black overflow-hidden border border-black/10 hover:border-black/20 transition-all duration-200 hover:scale-[1.02]"
+                className="group rounded-2xl bg-[#F4F0E7] text-black overflow-hidden border border-black/10 hover:border-black/20 transition-all duration-200 hover:scale-[1.02] shadow-[px_10px_15px_-3px_rgba(0,_0,_0,_0.1)] relative"
               >
                 <div className="h-28 relative overflow-hidden">
                   {item.image ? (
                     <img
-                      src={`http://localhost:4000${item.image}`}
+                      src={`http://localhost:4001${item.image}`}
                       alt={item.name}
                       className="h-full w-full object-cover hover:scale-110 transition-transform duration-300"
                     />
@@ -166,10 +128,12 @@ export default function SectionBlock({ section }) {
                     </div>
                   )}
                 </div>
+                <div className={`absolute top-1/2 right-2 transform -translate-y-1/2 inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold ${
+                  item.isAvailable === false ? 'bg-[#803932] text-white' : 'bg-[#6c3a34] text-white'
+                }`}>
+                  {item.isAvailable === false ? 'SOLD OUT' : formatPrice(item.price)}
+                </div>
                 <div className="p-3 pt-2">
-                  <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-[#6c3a34] text-white text-xs font-bold mb-2">
-                    {formatPrice(item.price)}
-                  </div>
                   <div className="text-sm font-semibold leading-tight h-10 flex items-center justify-center">
                     {item.name}
                   </div>
@@ -177,24 +141,29 @@ export default function SectionBlock({ section }) {
               </button>
             ))
           ) : (
-            <div className="col-span-2 text-center py-8 opacity-60">
+            <div className="col-span-2 text-center py-8 opacity-60 text-black/80">
               No items yet
             </div>
           )}
         </div>
       </div>
 
-      {/* Modal - unchanged */}
+      {/* Modal - updated price tag position */}
       {openItem && (
         <Modal onClose={() => setOpenItem(null)}>
           <div className="absolute inset-0 h-full w-full">
             {openItem.image ? (
-              <img src={`http://localhost:4000${openItem.image}`} alt={openItem.name} className="h-full w-full object-cover" />
+              <img src={`http://localhost:4001${openItem.image}`} alt={openItem.name} className="h-full w-full object-cover" />
             ) : (
               <div className="h-full w-full bg-gradient-to-br from-gray-300/50 to-gray-400/50 flex items-center justify-center">
                 <span className="text-4xl">📸</span>
               </div>
             )}
+          </div>
+          <div className={`absolute top-6 left-4 inline-flex items-center justify-center px-4 py-2 rounded-xl text-sm font-bold shadow-lg ${
+            openItem.isAvailable ? 'bg-[#803932] text-white' : 'bg-[#803932] text-white'
+          }`}>
+            {openItem.isAvailable ? `Rp ${openItem.price?.toLocaleString('id-ID') || '36.000'}` : 'SOLD OUT'}
           </div>
           <h3 className="text-xl font-bold mb-3 leading-tight">{openItem.name}</h3>
           {openItem.descriptionId && (
@@ -207,130 +176,7 @@ export default function SectionBlock({ section }) {
               {openItem.descriptionEn}
             </p>
           )}
-          <div className="flex justify-end mt-auto p-4">
-            <div className="bg-[#803932] text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg">
-              Rp {openItem.price?.toLocaleString('id-ID') || '36.000'}
-            </div>
-          </div>
         </Modal>
-=======
-            backgroundRepeat: 'no-repeat',
-          }}
-        >
-          <div className="absolute inset-0 bg-black/40" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 py-2">
-            <h2 className={`text-2xl font-bold leading-tight ${style.headerText}`}>
-              {section.name}
-            </h2>
-            {section.subtitle && (
-              <p className={`text-xs mt-1 ${style.subtitleText}`}>
-                {section.subtitle}
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-
-
-      {/* Category tabs */}
-      <div className="space-y-2 mb-5">
-          {categories.map((cat) => {
-            const isActive = activeCategoryId === cat.id
-          return (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategoryId(cat.id)}
-              className={`w-full rounded-xl py-3 px-4 text-center font-semibold transition-all duration-200 shadow-md ${
-              isActive
-              ? 'bg-[#e44b4b] text-white shadow-xl scale-[1.02]'
-              : 'bg-white/10 text-white hover:bg-white/20 hover:text-black/90 shadow-lg hover:shadow-xl'
-            }`}
-              >
-            {cat.name}
-          </button>
-            )
-          })}
-      </div>
-
-
-      {/* Items grid */}
-      <div className="grid grid-cols-2 gap-3">
-        {activeItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setOpenItem(item)}
-            className="group rounded-2xl bg-[#ead7c6] text-black overflow-hidden border-1 border-black/10 hover:border-black/20 transition-all duration-200 hover:scale-[1.02]"
-          >
-            <div className="h-28 relative overflow-hidden">
-              {item.image ? (
-                <img
-                  src={`http://localhost:4000${item.image}`}
-                  alt={item.name}
-                  className="h-full w-full object-cover hover:scale-110 transition-transform duration-300"
-                  onError={(e) => {
-                    e.target.style.display = 'none'
-                    e.target.nextSibling.style.display = 'flex'
-                  }}
-                />
-              ) : null}
-              {!item.image && (
-                <div className="h-full w-full bg-gradient-to-br from-gray-300/50 to-gray-400/50 flex items-center justify-center">
-                  <span className="text-lg">📸</span>
-                </div>
-              )}
-            </div>
-
-            <div className="p-3 pt-2">
-              <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-[#6c3a34] text-white text-xs font-bold mb-2">
-                {formatPrice(item.price)}
-              </div>
-              <div className="text-sm font-semibold leading-tight h-10 flex items-center justify-center">
-                {item.name}
-              </div>
-            </div>
-          </button>
-        ))}
-      </div>
-
-      {/* Modal */}
-      {openItem && (
-        <Modal onClose={() => setOpenItem(null)}>
-        {/* Image */}
-        <div className="absolute inset-0 h-full w-full">
-          {openItem.image ? (
-            <img src={`http://localhost:4000${openItem.image}`} alt={openItem.name} className="h-full w-full object-cover" />
-          ) : (
-            <div className="h-full w-full bg-gradient-to-br from-gray-300/50 to-gray-400/50 flex items-center justify-center">
-              <span className="text-4xl">📸</span>
-            </div>
-          )}
-        </div>
-
-        {/* Name */}
-        <h3 className="text-xl font-bold mb-3 leading-tight">{openItem.name}</h3>
-        
-        {/* Descriptions */}
-        {openItem.descriptionId && (
-          <p className="text-sm text-gray-800 mb-2 leading-relaxed">
-            {openItem.descriptionId}
-          </p>
-        )}
-        {openItem.descriptionEn && (
-          <p className="text-xs italic text-gray-600 mb-4">
-            {openItem.descriptionEn}
-          </p>
-        )}
-        
-        {/* PRICE - ADD THIS BACK */}
-        <div className="flex justify-end mt-auto p-4">
-          <div className="bg-[#803932] text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg">
-            Rp {openItem.price?.toLocaleString('id-ID') || '36.000'}
-          </div>
-        </div>
-      </Modal>
-
-
->>>>>>> 7a70924aa02c0e26959d2212420afa198c8e47ab
       )}
     </section>
   )

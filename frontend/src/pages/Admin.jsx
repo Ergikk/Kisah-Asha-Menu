@@ -1,23 +1,30 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getMenu, saveItem, deleteItem } from '../api/client.js'
+import { getMenu, saveItem, deleteItem, addSection, updateSection, deleteSection, addCategory, toggleItemAvailability } from '../api/client.js'
 
 export default function Admin() {
   const navigate = useNavigate()
   const [menu, setMenu] = useState(null)
   const [selected, setSelected] = useState({ sectionId: '', categoryId: '' })
-  const [form, setForm] = useState({ 
+  const [form, setForm] = useState({
     id: '', name: '', price: '', descriptionId: '', descriptionEn: '', image: ''
   })
   const [imagePreview, setImagePreview] = useState(null)
   const [imageFile, setImageFile] = useState(null)
   const [status, setStatus] = useState('')
   const [editingItem, setEditingItem] = useState(null)  // NEW: Edit mode
+  const [editingSection, setEditingSection] = useState(null)
+  const [editingCategory, setEditingCategory] = useState(null)
+  const [sectionForm, setSectionForm] = useState({ name: '', subtitle: '', cardBg: '', headerImage: '' })
+  const [sectionImageFile, setSectionImageFile] = useState(null)
+  const [sectionImagePreview, setSectionImagePreview] = useState(null)
+  const [categoryForm, setCategoryForm] = useState({ name: '' })
+  const [adminLevel, setAdminLevel] = useState(() => localStorage.getItem('asha_admin_level') || 'main')
 
-  // Auth check (unchanged)
+  // Auth check (fixed token parsing)
   useEffect(() => {
     const token = localStorage.getItem('asha_admin_token')
-    if (!token || parseInt(token.split('_')[2]) < Date.now() - 24*60*60*1000) {
+    if (!token || parseInt(token.split('_')[0]) < Date.now() - 24*60*60*1000) {
       localStorage.removeItem('asha_admin_token')
       navigate('/admin-login')
       return
@@ -31,7 +38,7 @@ export default function Admin() {
   const uploadImage = async (file) => {
     const formData = new FormData()
     formData.append('image', file)
-    const res = await fetch('http://localhost:4000/api/upload', { method: 'POST', body: formData })
+    const res = await fetch('http://localhost:4001/api/upload', { method: 'POST', body: formData })
     const data = await res.json()
     return data.image
   }
@@ -105,15 +112,117 @@ export default function Admin() {
     }
   }
 
+  const handleSectionImageChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      setSectionImageFile(file)
+      const reader = new FileReader()
+      reader.onload = (e) => setSectionImagePreview(e.target.result)
+      reader.readAsDataURL(file)
+    }
+  }
+
+const handleAddSection = async (e) => {
+  e.preventDefault()
+  try {
+    let finalSection = {
+      id: sectionForm.name.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Date.now(),
+      name: sectionForm.name,
+      subtitle: sectionForm.subtitle,
+      cardBg: sectionForm.cardBg || '#803932',
+      headerImage: sectionForm.headerImage || '/images/default-bg.png'
+    }
+
+    if (sectionImageFile) {
+      finalSection.headerImage = await uploadImage(sectionImageFile)
+    }
+
+    await addSection(finalSection)
+    setMenu(await getMenu())
+    setStatus('✅ Section added!')
+    setSectionForm({ name: '', subtitle: '', cardBg: '', headerImage: '' })
+    setSectionImageFile(null)
+    setSectionImagePreview(null)
+  } catch (error) {
+    setStatus('❌ Add section failed: ' + error.message)
+  }
+}
+
+const handleEditSection = (section) => {
+  setEditingSection(section)
+  setSectionForm({
+    name: section.name,
+    subtitle: section.subtitle || '',
+    cardBg: section.cardBg || '#803932',
+    headerImage: section.headerImage || ''
+  })
+}
+
+const handleUpdateSection = async (e) => {
+  e.preventDefault()
+  try {
+    let finalSection = {
+      ...editingSection,
+      ...sectionForm
+    }
+
+    if (sectionImageFile) {
+      finalSection.headerImage = await uploadImage(sectionImageFile)
+    }
+
+    await updateSection(editingSection.id, finalSection)
+    setMenu(await getMenu())
+    setStatus('✅ Section updated!')
+    setEditingSection(null)
+    setSectionForm({ name: '', subtitle: '', cardBg: '', headerImage: '' })
+    setSectionImageFile(null)
+    setSectionImagePreview(null)
+  } catch (error) {
+    setStatus('❌ Update failed')
+  }
+}
+
+const handleAddCategory = async (sectionId) => {
+  try {
+    await addCategory(sectionId, {
+      id: categoryForm.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+      name: categoryForm.name
+    })
+    setMenu(await getMenu())
+    setStatus('✅ Category added!')
+    setCategoryForm({ name: '' })
+  } catch (error) {
+    setStatus('❌ Add category failed')
+  }
+}
+
+const handleDeleteSection = async (sectionId) => {
+  if (!confirm('Delete this section and all its categories and items?')) return
+  try {
+    await deleteSection(sectionId)
+    setMenu(await getMenu())
+    setStatus('✅ Section deleted!')
+  } catch (error) {
+    setStatus('❌ Delete section failed')
+  }
+}
+
+const handleToggleAvailability = async (sectionId, categoryId, itemId) => {
+  try {
+    await toggleItemAvailability(sectionId, categoryId, itemId)
+    setMenu(await getMenu())
+    setStatus('✅ Item availability updated!')
+  } catch (error) {
+    setStatus('❌ Toggle availability failed')
+  }
+}
+
   if (!menu) return <div className="animate-pulse mt-20 text-center text-white/70">Loading menu...</div>
 
   return (
-    <div className="w-full max-w-[430px] mx-auto p-4 space-y-6 min-h-screen pb-20">  {/* Mobile-first, matches main */}
+    <div className="w-full mx-auto p-4 space-y-6 min-h-screen pb-20">  {/* Responsive width */}
       {/* Header (no duplicate - App.jsx handles) */}
-      <div className="pt-4">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent text-center mb-2">
-          Menu Admin ✨
-        </h1>
+      <div className="pt-2">
         <div className="text-sm opacity-75 text-center">
           Selected: <span className="font-mono bg-white/20 px-2 py-1 rounded">
             {selected.sectionId ? menu.sections.find(s => s.id === selected.sectionId)?.name : '—'} / 
@@ -122,8 +231,8 @@ export default function Admin() {
         </div>
       </div>
 
-      {/* Menu Grid - Mobile single column */}
-      <div className="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto">  {/* Scrollable on small screens */}
+      {/* Menu Grid - Responsive columns */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 md:max-h-[600px] lg:max-h-[800px] overflow-y-auto">  {/* Taller on larger screens */}
         {menu.sections.map(section => (
           <div key={section.id} className="bg-black/30 backdrop-blur-sm p-4 rounded-2xl border border-white/20">
             <h3 className="font-bold text-lg mb-3 text-white/90">{section.name}</h3>
@@ -141,35 +250,50 @@ export default function Admin() {
                     </button>
                   </div>
                 </div>
-                <div className="space-y-2 text-sm max-h-24 overflow-y-auto">
+                <div className="space-y-2 text-sm max-h-80 overflow-y-auto">
                   {cat.items.map(item => (
-                    <div key={item.id} className="flex items-center justify-between p-3 bg-white/20 rounded-lg hover:bg-white/30 transition-all">
+                    <div key={item.id} className="flex items-center justify-between p-3 md:p-4 bg-white/20 rounded-lg hover:bg-white/30 transition-all">
                       <div className="flex items-center space-x-3 flex-1 min-w-0">
                         {item.image ? (
-                          <img src={`http://localhost:4000${item.image}`} alt={item.name} className="w-12 h-12 rounded-lg object-cover border border-white/50 flex-shrink-0" />
+                          <img src={`http://localhost:4001${item.image}`} alt={item.name} className="w-12 h-12 md:w-16 md:h-16 rounded-lg object-cover border border-white/50 flex-shrink-0" />
                         ) : (
-                          <div className="w-12 h-12 bg-gray-500/50 rounded-lg flex items-center justify-center text-xs text-white/80 flex-shrink-0">No img</div>
+                          <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-500/50 rounded-lg flex items-center justify-center text-xs text-white/80 flex-shrink-0">No img</div>
                         )}
                         <div className="min-w-0 flex-1">
-                          <div className="font-medium text-white truncate">{item.name}</div>
-                          <div className="text-xs opacity-80">Rp {item.price?.toLocaleString()}</div>
+                          <div className="font-medium text-white text-sm md:text-base truncate">{item.name}</div>
+                          <div className="text-xs md:text-sm opacity-80">Rp {item.price?.toLocaleString()}</div>
                         </div>
                       </div>
                       <div className="flex gap-1">
-                        <button 
-                          onClick={() => handleEdit(item)}
-                          className="px-2 py-1 bg-green-500/90 hover:bg-green-600 text-white text-xs rounded font-medium transition-all"
-                          title="Edit"
+                        <button
+                          onClick={() => handleToggleAvailability(section.id, cat.id, item.id)}
+                          className={`px-2 py-1 text-white text-xs rounded font-medium transition-all ${
+                            item.isAvailable
+                              ? 'bg-orange-500/90 hover:bg-orange-600'
+                              : 'bg-green-500/90 hover:bg-green-600'
+                          }`}
+                          title={item.isAvailable ? 'Mark as Sold Out' : 'Mark as Available'}
                         >
-                          ✏️
+                          {item.isAvailable ? '🔴' : '🟢'}
                         </button>
-                        <button 
-                          onClick={() => handleDelete(section.id, cat.id, item.id)}
-                          className="px-2 py-1 bg-red-500/90 hover:bg-red-600 text-white text-xs rounded font-medium transition-all"
-                          title="Delete"
-                        >
-                          🗑️
-                        </button>
+                        {adminLevel === 'main' && (
+                          <>
+                            <button
+                              onClick={() => handleEdit(item)}
+                              className="px-2 py-1 bg-blue-500/90 hover:bg-blue-600 text-white text-xs rounded font-medium transition-all"
+                              title="Edit"
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              onClick={() => handleDelete(section.id, cat.id, item.id)}
+                              className="px-2 py-1 bg-red-500/90 hover:bg-red-600 text-white text-xs rounded font-medium transition-all"
+                              title="Delete"
+                            >
+                              🗑️
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -187,84 +311,176 @@ export default function Admin() {
         )}
       </div>
 
-      {/* Form - Full width mobile */}
-      <form onSubmit={handleSave} className="bg-gradient-to-br from-black/40 to-black/60 backdrop-blur-md p-6 rounded-3xl border-2 border-white/20 space-y-4">
-        <h3 className="font-bold text-xl text-center text-white/95">
-          {editingItem ? `Edit: ${editingItem.name}` : 'Add New Item'} ✨
-        </h3>
-        
-        <div>
-          <label className="block text-sm font-medium mb-2 text-white/90">Menu Photo</label>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gradient-to-r file:from-[#e44b4b] file:to-red-600 file:text-white hover:file:from-red-600 hover:file:to-red-700 cursor-pointer flex-1 w-full text-sm text-white/70 file:transition-all"
-            />
-            {imagePreview && (
-              <img src={imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-white/50 shadow-lg flex-shrink-0" />
-            )}
-          </div>
-          {form.image && !imageFile && (
-            <div className="mt-2 text-xs opacity-75 text-white/80">
-              Current: <a href={`http://localhost:4000${form.image}`} target="_blank" className="underline hover:text-blue-400">View</a>
-            </div>
-          )}
-        </div>
+      {adminLevel === 'main' && (
+        <>
+          <div className="bg-white/5 backdrop-blur p-4 md:p-6 rounded-2xl border border-white/20 mb-6 md:w-3/4 lg:w-1/2 mx-auto">
+            <h3 className="font-bold text-lg md:text-xl mb-4 text-center">📁 Manage Sections</h3>
 
-        <input
-          className="w-full p-4 rounded-2xl text-black text-lg font-semibold bg-white/95 focus:outline-none focus:ring-4 focus:ring-blue-400/60 shadow-lg"
-          placeholder="Item Name (e.g. Chicken Creamy Rosemary)"
-          value={form.name}
-          onChange={e => setForm({...form, name: e.target.value})}
-          required
-        />
-        
-        <input
-          className="w-full p-4 rounded-2xl text-black text-lg font-semibold bg-white/95 focus:outline-none focus:ring-4 focus:ring-green-400/60 shadow-lg"
-          type="number"
-          placeholder="Price (36000)"
-          value={form.price}
-          onChange={e => setForm({...form, price: e.target.value})}
-          required
-        />
-        
-        <textarea
-          className="w-full p-4 rounded-2xl text-black text-base leading-relaxed bg-white/95 focus:outline-none focus:ring-4 focus:ring-purple-400/60 shadow-lg resize-vertical"
-          rows="3"
-          placeholder="Description Bahasa Indonesia"
-          value={form.descriptionId}
-          onChange={e => setForm({...form, descriptionId: e.target.value})}
-        />
-        
-        <textarea
-          className="w-full p-4 rounded-2xl text-black text-sm leading-relaxed bg-white/95 focus:outline-none focus:ring-4 focus:ring-indigo-400/60 shadow-lg resize-vertical"
-          rows="2"
-          placeholder="Description English (optional)"
-          value={form.descriptionEn}
-          onChange={e => setForm({...form, descriptionEn: e.target.value})}
-        />
-        
-        <div className="flex gap-3 pt-2">
-          <button 
-            type="submit" 
-            className="flex-1 bg-gradient-to-r from-[#e44b4b] to-red-600 text-white font-bold py-4 rounded-2xl text-lg shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-red-400/60 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!selected.sectionId || !selected.categoryId}
-          >
-            {editingItem ? 'Update Item' : 'Add New Item'}
-          </button>
-          {editingItem && (
-            <button
-              type="button"
-              onClick={resetForm}
-              className="px-6 py-4 bg-gray-500/80 hover:bg-gray-600 text-white font-semibold text-sm rounded-2xl transition-all shadow-lg"
-            >
-              Cancel
-            </button>
-          )}
-        </div>
-      </form>
+            {/* Add/Edit Section Form */}
+            <form onSubmit={editingSection ? handleUpdateSection : handleAddSection} className="space-y-3 mb-4 p-3 md:p-4 bg-black/20 rounded-xl">
+              <input
+                placeholder="Section Name (Food, Breakfast)"
+                value={sectionForm.name}
+                onChange={(e) => setSectionForm({...sectionForm, name: e.target.value})}
+                className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
+              />
+              <input
+                placeholder="Section Subtitle (optional description)"
+                value={sectionForm.subtitle}
+                onChange={(e) => setSectionForm({...sectionForm, subtitle: e.target.value})}
+                className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
+              />
+              <input
+                placeholder="Card BG (e.g. #803932)"
+                value={sectionForm.cardBg}
+                onChange={(e) => setSectionForm({...sectionForm, cardBg: e.target.value})}
+                className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
+              />
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">Header Image</label>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleSectionImageChange}
+                    className="file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gradient-to-r file:from-[#e44b4b] file:to-red-600 file:text-white hover:file:from-red-600 hover:file:to-red-700 cursor-pointer flex-1 w-full text-sm text-white/70 file:transition-all"
+                  />
+                  {sectionImagePreview && (
+                    <img src={sectionImagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-white/50 shadow-lg flex-shrink-0" />
+                  )}
+                </div>
+                {sectionForm.headerImage && !sectionImageFile && (
+                  <div className="mt-2 text-xs opacity-75 text-white/80">
+                    Current: <a href={`http://localhost:4001${sectionForm.headerImage}`} target="_blank" className="underline hover:text-blue-400">View</a>
+                  </div>
+                )}
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-green-500/90 hover:bg-green-600 text-white font-bold py-3 rounded-xl"
+              >
+                {editingSection ? 'Update Section' : 'Add Section'}
+              </button>
+              {editingSection && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingSection(null)
+                    setSectionForm({ name: '', subtitle: '', cardBg: '', headerImage: '' })
+                    setSectionImageFile(null)
+                    setSectionImagePreview(null)
+                  }}
+                  className="w-full bg-gray-500/80 hover:bg-gray-600 text-white py-3 rounded-xl"
+                >
+                  Cancel
+                </button>
+              )}
+            </form>
+
+            {/* Section List */}
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {menu.sections.map((section) => (
+                <div key={section.id} className="flex items-center justify-between p-3 bg-white/10 rounded-xl">
+                  <span className="font-semibold text-sm">{section.name}</span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleEditSection(section)}
+                      className="text-xs px-2 py-1 bg-blue-500/80 hover:bg-blue-600 text-white rounded-lg"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteSection(section.id)}
+                      className="text-xs px-2 py-1 bg-red-500/80 hover:bg-red-600 text-white rounded-lg"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Form - Responsive width */}
+          <form onSubmit={handleSave} className="bg-gradient-to-br from-black/40 to-black/60 backdrop-blur-md p-6 rounded-3xl border-2 border-white/20 space-y-4 md:w-3/4 lg:w-1/2 mx-auto">
+            <h3 className="font-bold text-xl text-center text-white/95">
+              {editingItem ? `Edit: ${editingItem.name}` : 'Add New Item'} ✨
+            </h3>
+
+            <div>
+              <label className="block text-sm font-medium mb-2 text-white/90">Menu Photo</label>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gradient-to-r file:from-[#e44b4b] file:to-red-600 file:text-white hover:file:from-red-600 hover:file:to-red-700 cursor-pointer flex-1 w-full text-sm text-white/70 file:transition-all"
+                />
+                {imagePreview && (
+                  <img src={imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-white/50 shadow-lg flex-shrink-0" />
+                )}
+              </div>
+              {form.image && !imageFile && (
+                <div className="mt-2 text-xs opacity-75 text-white/80">
+                  Current: <a href={`http://localhost:4001${form.image}`} target="_blank" className="underline hover:text-blue-400">View</a>
+                </div>
+              )}
+            </div>
+
+            <input
+              className="w-full p-4 rounded-2xl text-black text-lg font-semibold bg-white/95 focus:outline-none focus:ring-4 focus:ring-blue-400/60 shadow-lg"
+              placeholder="Item Name (e.g. Chicken Creamy Rosemary)"
+              value={form.name}
+              onChange={e => setForm({...form, name: e.target.value})}
+              required
+            />
+
+            <input
+              className="w-full p-4 rounded-2xl text-black text-lg font-semibold bg-white/95 focus:outline-none focus:ring-4 focus:ring-green-400/60 shadow-lg"
+              type="number"
+              placeholder="Price (36000)"
+              value={form.price}
+              onChange={e => setForm({...form, price: e.target.value})}
+              required
+            />
+
+            <textarea
+              className="w-full p-4 rounded-2xl text-black text-base leading-relaxed bg-white/95 focus:outline-none focus:ring-4 focus:ring-purple-400/60 shadow-lg resize-vertical"
+              rows="3"
+              placeholder="Description Bahasa Indonesia"
+              value={form.descriptionId}
+              onChange={e => setForm({...form, descriptionId: e.target.value})}
+            />
+
+            <textarea
+              className="w-full p-4 rounded-2xl text-black text-sm leading-relaxed bg-white/95 focus:outline-none focus:ring-4 focus:ring-indigo-400/60 shadow-lg resize-vertical"
+              rows="2"
+              placeholder="Description English (optional)"
+              value={form.descriptionEn}
+              onChange={e => setForm({...form, descriptionEn: e.target.value})}
+            />
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="submit"
+                className="flex-1 bg-gradient-to-r from-[#e44b4b] to-red-600 text-white font-bold py-4 rounded-2xl text-lg shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-red-400/60 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!selected.sectionId || !selected.categoryId}
+              >
+                {editingItem ? 'Update Item' : 'Add New Item'}
+              </button>
+              {editingItem && (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="px-6 py-4 bg-gray-500/80 hover:bg-gray-600 text-white font-semibold text-sm rounded-2xl transition-all shadow-lg"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          </form>
+        </>
+      )}
 
       {status && (
         <div className={`p-4 rounded-2xl text-center font-medium text-sm shadow-lg transition-all ${

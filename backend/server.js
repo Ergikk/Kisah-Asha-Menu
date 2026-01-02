@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const app = express()
-const PORT = 4000
+const PORT = 4001
 const DATA_PATH = path.join(__dirname, 'data', 'menu.json')
 
 // Create data folder if missing
@@ -124,6 +124,142 @@ app.delete('/api/items/:sectionId/:categoryId/:itemId', (req, res) => {
 app.post('/api/upload', upload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
   res.json({ image: `/images/${req.file.filename}` })
+})
+
+// Sections routes
+app.post('/api/sections', (req, res) => {
+  const section = req.body
+  if (!section.id || !section.name) {
+    return res.status(400).json({ error: 'Missing required fields: id, name' })
+  }
+
+  const data = readData()
+  const existingIndex = data.sections.findIndex(s => s.id === section.id)
+  if (existingIndex >= 0) {
+    return res.status(400).json({ error: 'Section with this id already exists' })
+  }
+
+  data.sections.push({
+    ...section,
+    categories: section.categories || []
+  })
+  writeData(data)
+  res.json(section)
+})
+
+app.put('/api/sections/:sectionId', (req, res) => {
+  const { sectionId } = req.params
+  const updates = req.body
+
+  const data = readData()
+  const sectionIndex = data.sections.findIndex(s => s.id === sectionId)
+  if (sectionIndex === -1) {
+    return res.status(404).json({ error: 'Section not found' })
+  }
+
+  data.sections[sectionIndex] = { ...data.sections[sectionIndex], ...updates }
+  writeData(data)
+  res.json(data.sections[sectionIndex])
+})
+
+app.delete('/api/sections/:sectionId', (req, res) => {
+  const { sectionId } = req.params
+
+  const data = readData()
+  const sectionIndex = data.sections.findIndex(s => s.id === sectionId)
+  if (sectionIndex === -1) {
+    return res.status(404).json({ error: 'Section not found' })
+  }
+
+  data.sections.splice(sectionIndex, 1)
+  writeData(data)
+  res.json({ success: true })
+})
+
+// Categories routes
+app.post('/api/sections/:sectionId/categories', (req, res) => {
+  const { sectionId } = req.params
+  const category = req.body
+  if (!category.id || !category.name) {
+    return res.status(400).json({ error: 'Missing required fields: id, name' })
+  }
+
+  const data = readData()
+  const section = data.sections.find(s => s.id === sectionId)
+  if (!section) {
+    return res.status(404).json({ error: 'Section not found' })
+  }
+
+  const existingIndex = section.categories.findIndex(c => c.id === category.id)
+  if (existingIndex >= 0) {
+    return res.status(400).json({ error: 'Category with this id already exists in this section' })
+  }
+
+  section.categories.push({
+    ...category,
+    items: category.items || []
+  })
+  writeData(data)
+  res.json(category)
+})
+
+app.delete('/api/sections/:sectionId/categories/:categoryId', (req, res) => {
+  const { sectionId, categoryId } = req.params
+
+  const data = readData()
+  const section = data.sections.find(s => s.id === sectionId)
+  if (!section) {
+    return res.status(404).json({ error: 'Section not found' })
+  }
+
+  const categoryIndex = section.categories.findIndex(c => c.id === categoryId)
+  if (categoryIndex === -1) {
+    return res.status(404).json({ error: 'Category not found' })
+  }
+
+  section.categories.splice(categoryIndex, 1)
+  writeData(data)
+  res.json({ success: true })
+})
+
+// Toggle item availability
+app.patch('/api/items/:sectionId/:categoryId/:itemId/toggle', (req, res) => {
+  const { sectionId, categoryId, itemId } = req.params
+
+  const data = readData()
+  const section = data.sections.find(s => s.id === sectionId)
+  if (!section) {
+    return res.status(404).json({ error: 'Section not found' })
+  }
+
+  const category = section.categories.find(c => c.id === categoryId)
+  if (!category) {
+    return res.status(404).json({ error: 'Category not found' })
+  }
+
+  const item = category.items.find(i => i.id === itemId)
+  if (!item) {
+    return res.status(404).json({ error: 'Item not found' })
+  }
+
+  item.isAvailable = !item.isAvailable
+  writeData(data)
+  res.json(item)
+})
+
+// Admin authentication
+const ADMIN_PASSWORD = 'asha2026'
+
+app.post('/api/admin/login', (req, res) => {
+  const { password } = req.body
+
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Invalid credentials' })
+  }
+
+  // Generate a simple token
+  const token = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  res.json({ token, level: 'main' })
 })
 
 app.listen(PORT, () => {
