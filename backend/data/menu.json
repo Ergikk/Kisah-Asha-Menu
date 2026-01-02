@@ -33,7 +33,6 @@
               "image": "",
               "isAvailable": true,
               "sortOrder": 1
-<<<<<<< HEAD
             },
             {
               "id": "chicken-creamy-mushroom",
@@ -54,8 +53,6 @@
               "image": "/images/1767344085000-556472261.jpg",
               "isAvailable": true,
               "sortOrder": 1
-=======
->>>>>>> 7a70924aa02c0e26959d2212420afa198c8e47ab
             }
           ]
         }
@@ -87,7 +84,6 @@
           "id": "kids-meal",
           "name": "Kids Meal",
           "sortOrder": 2,
-<<<<<<< HEAD
           "items": [
             {
               "id": "loki",
@@ -100,24 +96,18 @@
               "sortOrder": 1
             }
           ]
-=======
-          "items": []
->>>>>>> 7a70924aa02c0e26959d2212420afa198c8e47ab
         },
         {
           "id": "pasta",
           "name": "Pasta",
           "sortOrder": 3,
           "items": []
-<<<<<<< HEAD
         },
         {
           "id": "snack",
           "name": "Snack",
           "sortOrder": 4,
           "items": []
-=======
->>>>>>> 7a70924aa02c0e26959d2212420afa198c8e47ab
         }
       ]
     },
@@ -132,7 +122,6 @@
           "name": "Signature Coffee",
           "sortOrder": 1,
           "items": []
-<<<<<<< HEAD
         },
         {
           "id": "classic-coffee",
@@ -169,8 +158,6 @@
           "name": "Smoothies",
           "sortOrder": 7,
           "items": []
-=======
->>>>>>> 7a70924aa02c0e26959d2212420afa198c8e47ab
         }
       ]
     }

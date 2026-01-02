@@ -25,11 +25,7 @@ export default function PublicMenu() {
         </div>
       </div>
 
-<<<<<<< HEAD
       <div className="space-y-8">
-=======
-      <div className="space-y-6">
->>>>>>> 7a70924aa02c0e26959d2212420afa198c8e47ab
         {menu?.sections
           ?.sort((a, b) => a.sortOrder - b.sortOrder)
           ?.map(section => (
