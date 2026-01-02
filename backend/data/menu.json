@@ -1,0 +1,89 @@
+{
+  "sections": [
+    {
+      "id": "breakfast",
+      "name": "Breakfast & Pastry",
+      "subtitle": "Our selected menu's to start your day",
+      "sortOrder": 1,
+      "categories": [
+        {
+          "id": "breakfast-menu",
+          "name": "Breakfast Menu",
+          "sortOrder": 1,
+          "items": [
+            {
+              "id": "chicken",
+              "name": "Chicken",
+              "price": 36000,
+              "descriptionId": "ayam yang dimasak dengan rosemary dan saus rempah yang creamy disajikan\nbersama croissant.",
+              "descriptionEn": "chicken cooked with rosemary and a creamy spice sauce served with a\ncroissant.",
+              "image": "/images/1767293527721-657954534.png",
+              "isAvailable": true,
+              "sortOrder": 1
+            },
+            {
+              "id": "chicken-creamy-rosemary-with-croissant",
+              "name": "Chicken Creamy Rosemary with Croissant",
+              "price": 36000,
+              "descriptionId": "ayam yang dimasak dengan rosemary dan saus rempah yang creamy disajikan\nbersama croissant.",
+              "descriptionEn": "chicken cooked with rosemary and a creamy spice sauce served with a\ncroissant.\n",
+              "image": "",
+              "isAvailable": true,
+              "sortOrder": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "food",
+      "name": "Food",
+      "subtitle": "Hearty dishes of Main Course, Kids Meal, Pasta, & Snacks",
+      "sortOrder": 2,
+      "categories": [
+        {
+          "id": "main-course",
+          "name": "Main Course",
+          "sortOrder": 1,
+          "items": [
+            {
+              "id": "risol",
+              "name": "Risol",
+              "price": 19000,
+              "descriptionId": "Risol dengan isian mayo",
+              "descriptionEn": "",
+              "isAvailable": true,
+              "sortOrder": 1
+            }
+          ]
+        },
+        {
+          "id": "kids-meal",
+          "name": "Kids Meal",
+          "sortOrder": 2,
+          "items": []
+        },
+        {
+          "id": "pasta",
+          "name": "Pasta",
+          "sortOrder": 3,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "beverage",
+      "name": "Beverage",
+      "subtitle": "From bold brews to gentle refreshers",
+      "sortOrder": 3,
+      "categories": [
+        {
+          "id": "signature-coffee",
+          "name": "Signature Coffee",
+          "sortOrder": 1,
+          "items": []
+        }
+      ]
+    }
+  ]
+}
