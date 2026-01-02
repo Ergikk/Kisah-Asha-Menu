@@ -20,7 +20,11 @@ export default function App() {
     <div className="min-h-screen bg-[#6f7f72] text-white">
       <div className="mx-auto max-w-[430px] px-4 py-5">
         <header className="flex items-center justify-between bg-black/40 backdrop-blur-sm rounded-full px-5 py-3 mb-5">
+<<<<<<< HEAD
           <img src={logo} alt="Asha Logo" className="h-5 w-auto" />
+=======
+          <img src={logo} alt="Asha Logo" className="h-8 w-auto" />
+>>>>>>> 7a70924aa02c0e26959d2212420afa198c8e47ab
           <div className="font-semibold tracking-wide text-lg">
             {isAdmin ? 'Admin' : 'asha'}
           </div>
