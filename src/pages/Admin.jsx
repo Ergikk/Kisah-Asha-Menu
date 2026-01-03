@@ -313,14 +313,14 @@ const handleDeleteSection = async (sectionId) => {
                         <>
                           <button
                             onClick={() => handleEdit(item, section.id, category.id)}
-                            className="px-3 py-2 bg-blue-500/90 hover:bg-blue-600 text-white text-sm rounded-lg font-medium transition-all"
+                            className="px-2 py-1 bg-blue-500/90 hover:bg-blue-600 text-white text-xs rounded font-medium transition-all"
                             title="Edit"
                           >
                             ✏️
                           </button>
                           <button
                             onClick={() => handleDelete(section.id, category.id, item.id)}
-                            className="px-3 py-2 bg-red-500/90 hover:bg-red-600 text-white text-sm rounded-lg font-medium transition-all"
+                            className="px-2 py-1 bg-red-500/90 hover:bg-red-600 text-white text-xs rounded font-medium transition-all"
                             title="Delete"
                           >
                             🗑️
@@ -351,26 +351,28 @@ const handleDeleteSection = async (sectionId) => {
       )}
 
       {/* Menu Grid - Responsive columns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 md:max-h-[600px] lg:max-h-[1200px] overflow-y-auto">  {/* Taller on larger screens */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 ">  {/* Taller on larger screens */}
         {menu.sections.map(section => (
-          <div key={section.id} className="bg-black/30 backdrop-blur-sm p-4 rounded-2xl border border-white/20">
+          <div key={section.id} className="bg-black/30 backdrop-blur-sm p-6 rounded-2xl border border-white/20">
             <h3 className="font-bold text-lg mb-3 text-white/90">{section.name}</h3>
             {section.categories.map(cat => (
-              <div key={cat.id} className="mb-4 p-3 bg-white/10 rounded-xl border border-white/30">
+              <div key={cat.id} className="mb-6 p-4 bg-white/10 rounded-xl border border-white/30">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-2">
                   <span className="font-semibold text-white">{cat.name}</span>
                   <div className="flex gap-2 flex-wrap">
-                    <button
-                      onClick={() => {
-                        setSelected({ sectionId: section.id, categoryId: cat.id })
-                        setCurrentAction('add')
-                        resetForm()
-                        setShowAddItemModal(true)
-                      }}
-                      className="px-3 py-1.5 bg-green-500/90 hover:bg-green-600 text-white text-xs rounded-lg font-medium transition-all backdrop-blur-sm"
-                    >
-                      Add Item
-                    </button>
+                    {adminLevel === 'main' && (
+                      <button
+                        onClick={() => {
+                          setSelected({ sectionId: section.id, categoryId: cat.id })
+                          setCurrentAction('add')
+                          resetForm()
+                          setShowAddItemModal(true)
+                        }}
+                        className="px-3 py-1.5 bg-green-500/90 hover:bg-green-600 text-white text-xs rounded-lg font-medium transition-all backdrop-blur-sm"
+                      >
+                        Add Item
+                      </button>
+                    )}
                   </div>
                 </div>
                 <div className="space-y-2 text-sm max-h-80 overflow-y-auto">
@@ -658,20 +660,22 @@ const handleDeleteSection = async (sectionId) => {
               {getFilteredMenu().sections.map((section) => (
                 <div key={section.id} className="flex items-center justify-between p-3 bg-white/10 rounded-xl">
                   <span className="font-semibold text-sm">{section.name}</span>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEditSection(section)}
-                      className="text-xs px-2 py-1 bg-blue-500/80 hover:bg-blue-600 text-white rounded-lg"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteSection(section.id)}
-                      className="text-xs px-2 py-1 bg-red-500/80 hover:bg-red-600 text-white rounded-lg"
-                    >
-                      Delete
-                    </button>
-                  </div>
+                  {adminLevel === 'main' && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEditSection(section)}
+                        className="text-xs px-2 py-1 bg-blue-500/80 hover:bg-blue-600 text-white rounded-lg"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSection(section.id)}
+                        className="text-xs px-2 py-1 bg-red-500/80 hover:bg-red-600 text-white rounded-lg"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

@@ -248,18 +248,28 @@ app.patch('/api/items/:sectionId/:categoryId/:itemId/toggle', (req, res) => {
 })
 
 // Admin authentication
-const ADMIN_PASSWORD = 'asha2026'
+const ADMIN_PASSWORDS = {
+  main: 'asha2026',
+  limited: 'fruitybomb'
+}
 
 app.post('/api/admin/login', (req, res) => {
   const { password } = req.body
 
-  if (password !== ADMIN_PASSWORD) {
+  let level = null
+  if (password === ADMIN_PASSWORDS.main) {
+    level = 'main'
+  } else if (password === ADMIN_PASSWORDS.limited) {
+    level = 'limited'
+  }
+
+  if (!level) {
     return res.status(401).json({ error: 'Invalid credentials' })
   }
 
   // Generate a simple token
   const token = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-  res.json({ token, level: 'main' })
+  res.json({ token, level })
 })
 
 app.listen(PORT, () => {

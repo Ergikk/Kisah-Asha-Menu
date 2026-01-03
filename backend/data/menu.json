@@ -18,7 +18,7 @@
               "descriptionId": "ayam yang dimasak dengan rosemary dan saus rempah yang creamy disajikan\nbersama croissant.",
               "descriptionEn": "chicken cooked with rosemary and a creamy spice sauce served with a\ncroissant.",
               "image": "/images/1767457639368-499850005.png",
-              "isAvailable": false,
+              "isAvailable": true,
               "sortOrder": 1
             },
             {
@@ -135,7 +135,7 @@
               "descriptionId": "sup kaldu bening berisi buntut sapi, wortel, kentang dan tomat disajikan bersama nasi, emping dan sambal.",
               "descriptionEn": "a clear broth oxtail soup served with rice, gnemon seed crackers and sambal.",
               "image": "/images/1767458026115-13364312.png",
-              "isAvailable": true,
+              "isAvailable": false,
               "sortOrder": 1
             },
             {
