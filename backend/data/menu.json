@@ -10,38 +10,7 @@
           "id": "breakfast-menu",
           "name": "Breakfast Menu",
           "sortOrder": 1,
-          "items": [
-            {
-              "id": "chicken-creamy-rosemary-with-croissant",
-              "name": "Chicken Creamy Rosemary with Croissant",
-              "price": 36000,
-              "descriptionId": "ayam yang dimasak dengan rosemary dan saus rempah yang creamy disajikan\nbersama croissant.",
-              "descriptionEn": "chicken cooked with rosemary and a creamy spice sauce served with a\ncroissant.\n",
-              "image": "",
-              "isAvailable": true,
-              "sortOrder": 1
-            },
-            {
-              "id": "chicken-creamy-mushroom",
-              "name": "Chicken Creamy Mushroom",
-              "price": 36000,
-              "descriptionId": "askaoskaosk",
-              "descriptionEn": "aksoaksoaks",
-              "image": "/images/1767357525006-357874687.png",
-              "isAvailable": true,
-              "sortOrder": 1
-            },
-            {
-              "id": "chicken",
-              "name": "chicken creamyy",
-              "price": 18000,
-              "descriptionId": "akowakowkaowk",
-              "descriptionEn": "akwokawokawok",
-              "image": "/images/1767344085000-556472261.jpg",
-              "isAvailable": true,
-              "sortOrder": 1
-            }
-          ]
+          "items": []
         }
       ],
       "cardBg": "#803932",
@@ -57,34 +26,13 @@
           "id": "main-course",
           "name": "Main Course",
           "sortOrder": 1,
-          "items": [
-            {
-              "id": "risol",
-              "name": "Risol",
-              "price": 19000,
-              "descriptionId": "Risol dengan isian mayo",
-              "descriptionEn": "",
-              "isAvailable": true,
-              "sortOrder": 1
-            }
-          ]
+          "items": []
         },
         {
           "id": "kids-meal",
           "name": "Kids Meal",
           "sortOrder": 2,
-          "items": [
-            {
-              "id": "loki",
-              "name": "Loko",
-              "price": 18000,
-              "descriptionId": "aowkaowkaowk",
-              "descriptionEn": "akwoakwokawoakw",
-              "image": "",
-              "isAvailable": true,
-              "sortOrder": 1
-            }
-          ]
+          "items": []
         },
         {
           "id": "pasta",

@@ -20,6 +20,9 @@ export default function Admin() {
   const [sectionImagePreview, setSectionImagePreview] = useState(null)
   const [categoryForm, setCategoryForm] = useState({ name: '' })
   const [adminLevel, setAdminLevel] = useState(() => localStorage.getItem('asha_admin_level') || 'main')
+  const [showAddItemModal, setShowAddItemModal] = useState(false)
+  const [currentAction, setCurrentAction] = useState('add')
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Auth check (fixed token parsing)
   useEffect(() => {
@@ -69,7 +72,8 @@ export default function Admin() {
     }
   }
 
-  const handleEdit = (item) => {  // NEW: Populate form for edit
+  const handleEdit = (item, sectionId, categoryId) => {  // NEW: Populate form for edit and auto-select category
+    setSelected({ sectionId, categoryId })
     setEditingItem(item)
     setForm({
       id: item.id,
@@ -79,7 +83,9 @@ export default function Admin() {
       descriptionEn: item.descriptionEn || '',
       image: item.image || ''
     })
-    setImagePreview(item.image ? `http://localhost:4000${item.image}` : null)
+    setImagePreview(item.image ? `http://localhost:4001${item.image}` : null)
+    setCurrentAction('edit')
+    setShowAddItemModal(true)
   }
 
   const handleDelete = async (sectionId, categoryId, itemId) => {
@@ -99,6 +105,7 @@ export default function Admin() {
     setImagePreview(null)
     setImageFile(null)
     setEditingItem(null)
+    setShowAddItemModal(false)
   }
 
   const handleImageChange = (e) => {
@@ -212,15 +219,34 @@ const handleDeleteSection = async (sectionId) => {
   }
 }
 
-const handleToggleAvailability = async (sectionId, categoryId, itemId) => {
-  try {
-    await toggleItemAvailability(sectionId, categoryId, itemId)
-    setMenu(await getMenu())
-    alert('✅ Item availability updated!')
-  } catch (error) {
-    alert('❌ Toggle availability failed')
+  const handleToggleAvailability = async (sectionId, categoryId, itemId) => {
+    try {
+      await toggleItemAvailability(sectionId, categoryId, itemId)
+      setMenu(await getMenu())
+      alert('✅ Item availability updated!')
+    } catch (error) {
+      alert('❌ Toggle availability failed')
+    }
   }
-}
+
+  // Filter menu based on search query
+  const getFilteredMenu = () => {
+    if (!searchQuery.trim()) return menu
+
+    const filteredSections = menu.sections.map(section => ({
+      ...section,
+      categories: section.categories.map(category => ({
+        ...category,
+        items: category.items.filter(item =>
+          item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.descriptionId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.descriptionEn?.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      })).filter(category => category.items.length > 0)
+    })).filter(section => section.categories.length > 0)
+
+    return { ...menu, sections: filteredSections }
+  }
 
   if (!menu) return <div className="animate-pulse mt-20 text-center text-white/70">Loading menu...</div>
 
@@ -230,11 +256,87 @@ const handleToggleAvailability = async (sectionId, categoryId, itemId) => {
       <div className="pt-2">
         <div className="text-sm opacity-75 text-center">
           Selected: <span className="font-mono bg-white/20 px-2 py-1 rounded">
-            {selected.sectionId ? menu.sections.find(s => s.id === selected.sectionId)?.name : '—'} / 
+            {selected.sectionId ? menu.sections.find(s => s.id === selected.sectionId)?.name : '—'} /
             {selected.categoryId ? menu.sections.flatMap(s => s.categories).find(c => c.id === selected.categoryId)?.name : '—'}
           </span>
         </div>
       </div>
+
+      {/* Search Bar */}
+      <div className="mb-4">
+        <div className="max-w-md mx-auto">
+          <input
+            type="text"
+            placeholder="Search items across all categories..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full p-3 rounded-2xl bg-white/20 border border-white/30 text-white placeholder-white/70 focus:outline-none focus:ring-4 focus:ring-blue-400/60 shadow-lg"
+          />
+        </div>
+      </div>
+
+      {/* Search Results */}
+      {searchQuery.trim() && (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-white/90 mb-3 text-center">Search Results</h3>
+          <div className="max-h-96 overflow-y-auto space-y-2">
+            {getFilteredMenu().sections.flatMap(section =>
+              section.categories.flatMap(category =>
+                category.items.map(item => (
+                  <div key={`${section.id}-${category.id}-${item.id}`} className="flex items-center justify-between p-4 bg-white/10 rounded-xl border border-white/20 hover:bg-white/20 transition-all">
+                    <div className="flex items-center space-x-4 flex-1 min-w-0">
+                      {item.image ? (
+                        <img src={`http://localhost:4001${item.image}`} alt={item.name} className="w-16 h-16 rounded-lg object-cover border border-white/50 flex-shrink-0" />
+                      ) : (
+                        <div className="w-16 h-16 bg-gray-500/50 rounded-lg flex items-center justify-center text-xs text-white/80 flex-shrink-0">No img</div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-white text-base truncate">{item.name}</div>
+                        <div className="text-sm opacity-80 text-white/70">{section.name} / {category.name}</div>
+                        <div className="text-sm opacity-60">Rp {item.price?.toLocaleString()}</div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleToggleAvailability(section.id, category.id, item.id)}
+                        className={`px-3 py-2 text-white text-sm rounded-lg font-medium transition-all ${
+                          item.isAvailable
+                            ? 'bg-orange-500/90 hover:bg-orange-600'
+                            : 'bg-green-500/90 hover:bg-green-600'
+                        }`}
+                        title={item.isAvailable ? 'Mark as Sold Out' : 'Mark as Available'}
+                      >
+                        {item.isAvailable ? '🔴' : '🟢'}
+                      </button>
+                      {adminLevel === 'main' && (
+                        <>
+                          <button
+                            onClick={() => handleEdit(item, section.id, category.id)}
+                            className="px-3 py-2 bg-blue-500/90 hover:bg-blue-600 text-white text-sm rounded-lg font-medium transition-all"
+                            title="Edit"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={() => handleDelete(section.id, category.id, item.id)}
+                            className="px-3 py-2 bg-red-500/90 hover:bg-red-600 text-white text-sm rounded-lg font-medium transition-all"
+                            title="Delete"
+                          >
+                            🗑️
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )
+            )}
+            {getFilteredMenu().sections.flatMap(s => s.categories.flatMap(c => c.items)).length === 0 && (
+              <div className="text-center py-8 opacity-60 text-white/70">No items found matching "{searchQuery}"</div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Menu Grid - Responsive columns */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 md:max-h-[600px] lg:max-h-[800px] overflow-y-auto">  {/* Taller on larger screens */}
@@ -246,12 +348,16 @@ const handleToggleAvailability = async (sectionId, categoryId, itemId) => {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-2">
                   <span className="font-semibold text-white">{cat.name}</span>
                   <div className="flex gap-2 flex-wrap">
-                    <button 
-                      onClick={() => setSelected({ sectionId: section.id, categoryId: cat.id })}
-                      className="px-3 py-1.5 bg-blue-500/90 hover:bg-blue-600 text-white text-xs rounded-lg font-medium transition-all backdrop-blur-sm"
-                      disabled={selected.sectionId === section.id && selected.categoryId === cat.id}
+                    <button
+                      onClick={() => {
+                        setSelected({ sectionId: section.id, categoryId: cat.id })
+                        setCurrentAction('add')
+                        resetForm()
+                        setShowAddItemModal(true)
+                      }}
+                      className="px-3 py-1.5 bg-green-500/90 hover:bg-green-600 text-white text-xs rounded-lg font-medium transition-all backdrop-blur-sm"
                     >
-                      {selected.sectionId === section.id && selected.categoryId === cat.id ? '✅ Selected' : 'Edit Items'}
+                      Add Item
                     </button>
                   </div>
                 </div>
@@ -284,7 +390,7 @@ const handleToggleAvailability = async (sectionId, categoryId, itemId) => {
                         {adminLevel === 'main' && (
                           <>
                             <button
-                              onClick={() => handleEdit(item)}
+                              onClick={() => handleEdit(item, section.id, cat.id)}
                               className="px-2 py-1 bg-blue-500/90 hover:bg-blue-600 text-white text-xs rounded font-medium transition-all"
                               title="Edit"
                             >
@@ -420,7 +526,7 @@ const handleToggleAvailability = async (sectionId, categoryId, itemId) => {
 
             {/* Section List */}
             <div className="space-y-2 max-h-40 overflow-y-auto">
-              {menu.sections.map((section) => (
+              {getFilteredMenu().sections.map((section) => (
                 <div key={section.id} className="flex items-center justify-between p-3 bg-white/10 rounded-xl">
                   <span className="font-semibold text-sm">{section.name}</span>
                   <div className="flex gap-2">
@@ -442,106 +548,123 @@ const handleToggleAvailability = async (sectionId, categoryId, itemId) => {
             </div>
           </div>
 
-          {/* Form - Responsive width */}
-          <form onSubmit={handleSave} className="bg-gradient-to-br from-black/40 to-black/60 backdrop-blur-md p-6 rounded-3xl border-2 border-white/20 space-y-4 md:w-3/4 lg:w-1/2 mx-auto">
-            <h3 className="font-bold text-xl text-center text-white/95">
-              {editingItem ? `Edit: ${editingItem.name}` : 'Add New Item'} ✨
-            </h3>
 
-            <div>
-              <label className="block text-sm font-medium mb-2 text-white/90">Menu Photo</label>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gradient-to-r file:from-[#e44b4b] file:to-red-600 file:text-white hover:file:from-red-600 hover:file:to-red-700 cursor-pointer flex-1 w-full text-sm text-white/70 file:transition-all"
-                />
-                {imagePreview && (
-                  <img src={imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-white/50 shadow-lg flex-shrink-0" />
-                )}
-              </div>
-              {form.image && !imageFile && (
-                <div className="mt-2 text-xs opacity-75 text-white/80">
-                  Current: <a href={`http://localhost:4001${form.image}`} target="_blank" className="underline hover:text-blue-400">View</a>
-                </div>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2 text-white/90">Item Name</label>
-              <input
-                className="w-full p-4 rounded-2xl text-black text-lg font-semibold bg-white/95 focus:outline-none focus:ring-4 focus:ring-blue-400/60 shadow-lg"
-                placeholder="e.g. Chicken Creamy Rosemary"
-                value={form.name}
-                onChange={e => setForm({...form, name: e.target.value})}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2 text-white/90">Price</label>
-              <input
-                className="w-full p-4 rounded-2xl text-black text-lg font-semibold bg-white/95 focus:outline-none focus:ring-4 focus:ring-green-400/60 shadow-lg"
-                type="number"
-                placeholder="36000"
-                value={form.price}
-                onChange={e => setForm({...form, price: e.target.value})}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2 text-white/90">Description (Bahasa Indonesia)</label>
-              <textarea
-                className="w-full p-4 rounded-2xl text-black text-base leading-relaxed bg-white/95 focus:outline-none focus:ring-4 focus:ring-purple-400/60 shadow-lg resize-vertical"
-                rows="3"
-                placeholder="Enter description in Indonesian"
-                value={form.descriptionId}
-                onChange={e => setForm({...form, descriptionId: e.target.value})}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2 text-white/90">Description (English)</label>
-              <textarea
-                className="w-full p-4 rounded-2xl text-black text-sm leading-relaxed bg-white/95 focus:outline-none focus:ring-4 focus:ring-indigo-400/60 shadow-lg resize-vertical"
-                rows="2"
-                placeholder="Optional English description"
-                value={form.descriptionEn}
-                onChange={e => setForm({...form, descriptionEn: e.target.value})}
-              />
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                type="submit"
-                className="flex-1 bg-gradient-to-r from-[#e44b4b] to-red-600 text-white font-bold py-4 rounded-2xl text-lg shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-red-400/60 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={!selected.sectionId || !selected.categoryId}
-              >
-                {editingItem ? 'Update Item' : 'Add New Item'}
-              </button>
-              {editingItem && (
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="px-6 py-4 bg-gray-500/80 hover:bg-gray-600 text-white font-semibold text-sm rounded-2xl transition-all shadow-lg"
-                >
-                  Cancel
-                </button>
-              )}
-            </div>
-          </form>
         </>
       )}
 
       {status && (
         <div className={`p-4 rounded-2xl text-center font-medium text-sm shadow-lg transition-all ${
-          status.includes('✅') ? 'bg-green-500/30 border-2 border-green-500/50 text-green-100' : 
-          status.includes('❌') ? 'bg-red-500/30 border-2 border-red-500/50 text-red-100' : 
+          status.includes('✅') ? 'bg-green-500/30 border-2 border-green-500/50 text-green-100' :
+          status.includes('❌') ? 'bg-red-500/30 border-2 border-red-500/50 text-red-100' :
           'bg-blue-500/30 border-2 border-blue-500/50 text-blue-100'
         }`}>
           {status}
+        </div>
+      )}
+
+      {/* Add Item Modal */}
+      {showAddItemModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowAddItemModal(false)}>
+          <div className="bg-gradient-to-br from-black/40 to-black/60 backdrop-blur-md p-6 rounded-3xl border-2 border-white/20 space-y-4 w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center">
+              <h3 className="font-bold text-xl text-white/95">
+                {currentAction === 'edit' ? `Edit: ${editingItem?.name}` : 'Add New Item'} ✨
+              </h3>
+              <button
+                onClick={() => setShowAddItemModal(false)}
+                className="text-white/70 hover:text-white text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleSave} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">Menu Photo</label>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gradient-to-r file:from-[#e44b4b] file:to-red-600 file:text-white hover:file:from-red-600 hover:file:to-red-700 cursor-pointer flex-1 w-full text-sm text-white/70 file:transition-all"
+                  />
+                  {imagePreview && (
+                    <img src={imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-white/50 shadow-lg flex-shrink-0" />
+                  )}
+                </div>
+                {form.image && !imageFile && (
+                  <div className="mt-2 text-xs opacity-75 text-white/80">
+                    Current: <a href={`http://localhost:4001${form.image}`} target="_blank" className="underline hover:text-blue-400">View</a>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">Item Name</label>
+                <input
+                  className="w-full p-4 rounded-2xl text-black text-lg font-semibold bg-white/95 focus:outline-none focus:ring-4 focus:ring-blue-400/60 shadow-lg"
+                  placeholder="e.g. Chicken Creamy Rosemary"
+                  value={form.name}
+                  onChange={e => setForm({...form, name: e.target.value})}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">Price</label>
+                <input
+                  className="w-full p-4 rounded-2xl text-black text-lg font-semibold bg-white/95 focus:outline-none focus:ring-4 focus:ring-green-400/60 shadow-lg"
+                  type="number"
+                  placeholder="36000"
+                  value={form.price}
+                  onChange={e => setForm({...form, price: e.target.value})}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">Description (Bahasa Indonesia)</label>
+                <textarea
+                  className="w-full p-4 rounded-2xl text-black text-base leading-relaxed bg-white/95 focus:outline-none focus:ring-4 focus:ring-purple-400/60 shadow-lg resize-vertical"
+                  rows="3"
+                  placeholder="Enter description in Indonesian"
+                  value={form.descriptionId}
+                  onChange={e => setForm({...form, descriptionId: e.target.value})}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">Description (English)</label>
+                <textarea
+                  className="w-full p-4 rounded-2xl text-black text-sm leading-relaxed bg-white/95 focus:outline-none focus:ring-4 focus:ring-indigo-400/60 shadow-lg resize-vertical"
+                  rows="2"
+                  placeholder="Optional English description"
+                  value={form.descriptionEn}
+                  onChange={e => setForm({...form, descriptionEn: e.target.value})}
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="submit"
+                  className="flex-1 bg-gradient-to-r from-[#e44b4b] to-red-600 text-white font-bold py-4 rounded-2xl text-lg shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-red-400/60 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!selected.sectionId || !selected.categoryId}
+                >
+                  {currentAction === 'edit' ? 'Update Item' : 'Add New Item'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddItemModal(false)
+                    resetForm()
+                  }}
+                  className="px-6 py-4 bg-gray-500/80 hover:bg-gray-600 text-white font-semibold text-sm rounded-2xl transition-all shadow-lg"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
