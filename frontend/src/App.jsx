@@ -19,7 +19,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#6f7f72] text-white">
       <div className="mx-auto max-w-[430px] sm:max-w-[600px] md:max-w-[800px] lg:max-w-[1000px] xl:max-w-[1200px] px-4 py-5">
-        <header className="flex items-center justify-between bg-black/40 backdrop-blur-sm rounded-full px-5 py-3 mb-5">
+        <header className="flex items-center justify-between bg-[#363635] backdrop-blur-sm rounded-full px-5 py-3 mb-5">
           <img src={logo} alt="Asha Logo" className="h-5 w-auto" />
           <div className="font-semibold tracking-wide text-lg">
             {isAdmin ? 'Admin' : 'asha'}

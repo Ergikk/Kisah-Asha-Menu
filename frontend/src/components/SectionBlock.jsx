@@ -53,7 +53,10 @@ export default function SectionBlock({ section }) {
     return cat?.items || []
   }, [categories, activeCategoryId])
 
-  const formatPrice = (price) => (price ? Math.round(price / 1000) + 'K' : '')
+  const formatPrice = (item) => {
+    if (item.customPrice) return item.customPrice
+    return item.price ? Math.round(item.price / 1000) + 'K' : ''
+  }
 
   const style = getSectionStyle(section)
 
@@ -140,7 +143,7 @@ export default function SectionBlock({ section }) {
                 <div className={`absolute top-1/2 right-2 transform -translate-y-1/2 inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold ${
                   item.isAvailable === false ? 'bg-[#803932] text-white' : style.priceTagBg
                 }`}>
-                  {item.isAvailable === false ? 'SOLD OUT' : formatPrice(item.price)}
+                  {item.isAvailable === false ? 'SOLD OUT' : formatPrice(item)}
                 </div>
                 <div className="p-3 pt-2">
                   <div className={`text-sm font-semibold leading-tight h-10 flex items-center justify-center ${style.itemCardText}`}>
@@ -155,6 +158,40 @@ export default function SectionBlock({ section }) {
             </div>
           )}
         </div>
+
+        {/* Beverage Section Footer - Only when expanded */}
+        {section.id === 'beverage' && (
+          <div className="flex items-center justify-between px-8 py-4 bg-[#ED473F] text-white rounded-b-3xl">
+            <div className="text-sm font-normal italic">Additional</div>
+            <div className="flex-1 flex justify-center">
+              <img src="/stars.png" alt="Stars and Line" className="h-4" />
+            </div>
+            <div className="flex flex-col items-end">
+              <div className="text-sm font-normal">Espresso 8</div>
+              <div className="text-sm font-normal">Ice Cream 8</div>
+            </div>
+          </div>
+        )}
+
+        {/* Food Section Footer - Only when expanded */}
+        {section.id === 'food' && (
+          <div className="px-8 py-4 text-black rounded-b-3xl" style={{ backgroundColor: style.cardBg }}>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="text-sm font-normal italic">Additional</div>
+              <img src="/stars-black.png" alt="Stars and Line" className="h-4" />
+            </div>
+            <div className="flex items-center justify-between mb-1">
+              <div className="text-sm font-normal">Nasi</div>
+              <div className="text-sm font-normal">5</div>
+            </div>
+            <div className="text-xs italic text-gray-600 mb-2">Rice</div>
+            <div className="flex items-center justify-between mb-1">
+              <div className="text-sm font-normal">Telur</div>
+              <div className="text-sm font-normal">6</div>
+            </div>
+            <div className="text-xs italic text-gray-600">Scrambled/Sunny Side Up/Omelette/Boiled Egg</div>
+          </div>
+        )}
       </div>
 
       {/* Modal - updated price tag position */}
@@ -172,7 +209,7 @@ export default function SectionBlock({ section }) {
           <div className={`absolute top-6 left-4 inline-flex items-center justify-center px-4 py-2 rounded-xl text-sm font-bold shadow-lg ${
             openItem.isAvailable ? style.priceTagBg : 'bg-[#803932] text-white'
           }`}>
-            {openItem.isAvailable ? `Rp ${openItem.price?.toLocaleString('id-ID') || '36.000'}` : 'SOLD OUT'}
+            {openItem.isAvailable ? (openItem.customPrice || `Rp ${openItem.price?.toLocaleString('id-ID') || '36.000'}`) : 'SOLD OUT'}
           </div>
           <h3 className="text-xl font-bold mb-3 leading-tight">{openItem.name}</h3>
           {openItem.descriptionId && (
