@@ -9,7 +9,10 @@ const SECTION_STYLES = {
     subtitleText: 'text-white/80',
     headerImage: '/images/breakfast-bg.png',
     categoryActive: 'bg-[#ED473F] text-white',
-    categoryInactive: 'bg-orange-100 text-orange-900 hover:bg-orange-100'
+    categoryInactive: 'bg-orange-100 text-orange-900 hover:bg-orange-100',
+    priceTagBg: 'bg-[#6c3a34] text-white',
+    itemCardBg: 'bg-[#F4F0E7]',
+    itemCardText: 'text-black'
   },
   food: {
     cardBg: '#F4F0E7',
@@ -17,15 +20,21 @@ const SECTION_STYLES = {
     subtitleText: 'text-black/80',
     headerImage: '/images/food-bg.png',
     categoryActive: 'bg-[#647767] text-white',
-    categoryInactive: 'bg-orange-50 text-[#647767] hover:bg-orange-100'
+    categoryInactive: 'bg-orange-50 text-[#647767] hover:bg-orange-100',
+    priceTagBg: 'bg-[#647767] text-white',
+    itemCardBg: 'bg-[#F4F0E7]',
+    itemCardText: 'text-black'
   },
   beverage: {
-    cardBg: '#ED473F', 
+    cardBg: '#ED473F',
     headerText: 'text-[#ED473F]',
     subtitleText: 'text-[#ED473F]',
     headerImage: '/images/beverage-bg.png',
     categoryActive: 'bg[#ED473F] text-white',
-    categoryInactive: 'bg-[#F4F0E7] text-orange-900 hover:bg-orange-100'
+    categoryInactive: 'bg-[#F4F0E7] text-orange-900 hover:bg-orange-100',
+    priceTagBg: 'bg-[#ED473F] text-white',
+    itemCardBg: 'bg-[#F4F0E7]',
+    itemCardText: 'text-black'
   },
 }
 
@@ -113,14 +122,14 @@ export default function SectionBlock({ section }) {
               <button
                 key={item.id}
                 onClick={() => setOpenItem(item)}
-                className="group rounded-2xl bg-[#F4F0E7] text-black overflow-hidden border border-black/10 hover:border-black/20 transition-all duration-200 hover:scale-[1.02] shadow-[px_10px_15px_-3px_rgba(0,_0,_0,_0.1)] relative"
+                className={`group rounded-2xl ${style.itemCardBg} overflow-hidden border border-black/10 hover:border-black/20 transition-all duration-200 hover:scale-[1.02] shadow-[px_10px_15px_-3px_rgba(0,_0,_0,_0.1)] relative`}
               >
                 <div className="h-28 relative overflow-hidden">
                   {item.image ? (
                     <img
                       src={`http://localhost:4001${item.image}`}
                       alt={item.name}
-                      className="h-full w-full object-cover hover:scale-110 transition-transform duration-300"
+                      className="rounded-2x2 h-full w-full object-cover hover:scale-110 transition-transform duration-300"
                     />
                   ) : (
                     <div className="h-full w-full bg-gradient-to-br from-gray-300/50 to-gray-400/50 flex items-center justify-center">
@@ -129,12 +138,12 @@ export default function SectionBlock({ section }) {
                   )}
                 </div>
                 <div className={`absolute top-1/2 right-2 transform -translate-y-1/2 inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold ${
-                  item.isAvailable === false ? 'bg-[#803932] text-white' : 'bg-[#6c3a34] text-white'
+                  item.isAvailable === false ? 'bg-[#803932] text-white' : style.priceTagBg
                 }`}>
                   {item.isAvailable === false ? 'SOLD OUT' : formatPrice(item.price)}
                 </div>
                 <div className="p-3 pt-2">
-                  <div className="text-sm font-semibold leading-tight h-10 flex items-center justify-center">
+                  <div className={`text-sm font-semibold leading-tight h-10 flex items-center justify-center ${style.itemCardText}`}>
                     {item.name}
                   </div>
                 </div>
@@ -161,7 +170,7 @@ export default function SectionBlock({ section }) {
             )}
           </div>
           <div className={`absolute top-6 left-4 inline-flex items-center justify-center px-4 py-2 rounded-xl text-sm font-bold shadow-lg ${
-            openItem.isAvailable ? 'bg-[#803932] text-white' : 'bg-[#803932] text-white'
+            openItem.isAvailable ? style.priceTagBg : 'bg-[#803932] text-white'
           }`}>
             {openItem.isAvailable ? `Rp ${openItem.price?.toLocaleString('id-ID') || '36.000'}` : 'SOLD OUT'}
           </div>

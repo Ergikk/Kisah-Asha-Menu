@@ -11,11 +11,11 @@ export default function Admin() {
   })
   const [imagePreview, setImagePreview] = useState(null)
   const [imageFile, setImageFile] = useState(null)
-  const [status, setStatus] = useState('')
+
   const [editingItem, setEditingItem] = useState(null)  // NEW: Edit mode
   const [editingSection, setEditingSection] = useState(null)
   const [editingCategory, setEditingCategory] = useState(null)
-  const [sectionForm, setSectionForm] = useState({ name: '', subtitle: '', cardBg: '', headerImage: '' })
+  const [sectionForm, setSectionForm] = useState({ name: '', subtitle: '', cardBg: '', headerImage: '', priceTagBg: '', itemCardBg: '', itemCardText: '' })
   const [sectionImageFile, setSectionImageFile] = useState(null)
   const [sectionImagePreview, setSectionImagePreview] = useState(null)
   const [categoryForm, setCategoryForm] = useState({ name: '' })
@@ -45,9 +45,8 @@ export default function Admin() {
 
   const handleSave = async (e) => {
     e.preventDefault()
-    if (!selected.sectionId || !selected.categoryId) return setStatus('❌ Select section/category first')
+    if (!selected.sectionId || !selected.categoryId) return alert('❌ Select section/category first')
 
-    setStatus('⏳ Saving...')
     try {
       let finalItem = {
         ...form,
@@ -63,10 +62,10 @@ export default function Admin() {
 
       await saveItem(selected.sectionId, selected.categoryId, finalItem)
       setMenu(await getMenu())
-      setStatus('✅ Saved successfully!')
+      alert('✅ Saved successfully!')
       resetForm()
     } catch (error) {
-      setStatus('❌ Save failed: ' + error.message)
+      alert('❌ Save failed: ' + error.message)
     }
   }
 
@@ -88,10 +87,10 @@ export default function Admin() {
     try {
       await deleteItem(sectionId, categoryId, itemId)
       setMenu(await getMenu())
-      setStatus('✅ Deleted!')
+      alert('✅ Deleted!')
       resetForm()
     } catch {
-      setStatus('❌ Delete failed')
+      alert('❌ Delete failed')
     }
   }
 
@@ -130,7 +129,10 @@ const handleAddSection = async (e) => {
       name: sectionForm.name,
       subtitle: sectionForm.subtitle,
       cardBg: sectionForm.cardBg || '#803932',
-      headerImage: sectionForm.headerImage || '/images/default-bg.png'
+      headerImage: sectionForm.headerImage || '/images/default-bg.png',
+      priceTagBg: sectionForm.priceTagBg || '#6c3a34',
+      itemCardBg: sectionForm.itemCardBg || '#F4F0E7',
+      itemCardText: sectionForm.itemCardText || '#000000'
     }
 
     if (sectionImageFile) {
@@ -139,12 +141,12 @@ const handleAddSection = async (e) => {
 
     await addSection(finalSection)
     setMenu(await getMenu())
-    setStatus('✅ Section added!')
-    setSectionForm({ name: '', subtitle: '', cardBg: '', headerImage: '' })
+    alert('✅ Section added!')
+    setSectionForm({ name: '', subtitle: '', cardBg: '', headerImage: '', priceTagBg: '', itemCardBg: '', itemCardText: '' })
     setSectionImageFile(null)
     setSectionImagePreview(null)
   } catch (error) {
-    setStatus('❌ Add section failed: ' + error.message)
+    alert('❌ Add section failed: ' + error.message)
   }
 }
 
@@ -154,7 +156,10 @@ const handleEditSection = (section) => {
     name: section.name,
     subtitle: section.subtitle || '',
     cardBg: section.cardBg || '#803932',
-    headerImage: section.headerImage || ''
+    headerImage: section.headerImage || '',
+    priceTagBg: section.priceTagBg || '#6c3a34',
+    itemCardBg: section.itemCardBg || '#F4F0E7',
+    itemCardText: section.itemCardText || '#000000'
   })
 }
 
@@ -172,13 +177,13 @@ const handleUpdateSection = async (e) => {
 
     await updateSection(editingSection.id, finalSection)
     setMenu(await getMenu())
-    setStatus('✅ Section updated!')
-    setEditingSection(null)
-    setSectionForm({ name: '', subtitle: '', cardBg: '', headerImage: '' })
+    alert('✅ Section updated!')
+                  setEditingSection(null)
+                  setSectionForm({ name: '', subtitle: '', cardBg: '', headerImage: '', priceTagBg: '', itemCardBg: '' })
     setSectionImageFile(null)
     setSectionImagePreview(null)
   } catch (error) {
-    setStatus('❌ Update failed')
+    alert('❌ Update failed')
   }
 }
 
@@ -201,9 +206,9 @@ const handleDeleteSection = async (sectionId) => {
   try {
     await deleteSection(sectionId)
     setMenu(await getMenu())
-    setStatus('✅ Section deleted!')
+    alert('✅ Section deleted!')
   } catch (error) {
-    setStatus('❌ Delete section failed')
+    alert('❌ Delete section failed')
   }
 }
 
@@ -211,9 +216,9 @@ const handleToggleAvailability = async (sectionId, categoryId, itemId) => {
   try {
     await toggleItemAvailability(sectionId, categoryId, itemId)
     setMenu(await getMenu())
-    setStatus('✅ Item availability updated!')
+    alert('✅ Item availability updated!')
   } catch (error) {
-    setStatus('❌ Toggle availability failed')
+    alert('❌ Toggle availability failed')
   }
 }
 
@@ -318,24 +323,60 @@ const handleToggleAvailability = async (sectionId, categoryId, itemId) => {
 
             {/* Add/Edit Section Form */}
             <form onSubmit={editingSection ? handleUpdateSection : handleAddSection} className="space-y-3 mb-4 p-3 md:p-4 bg-black/20 rounded-xl">
-              <input
-                placeholder="Section Name (Food, Breakfast)"
-                value={sectionForm.name}
-                onChange={(e) => setSectionForm({...sectionForm, name: e.target.value})}
-                className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
-              />
-              <input
-                placeholder="Section Subtitle (optional description)"
-                value={sectionForm.subtitle}
-                onChange={(e) => setSectionForm({...sectionForm, subtitle: e.target.value})}
-                className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
-              />
-              <input
-                placeholder="Card BG (e.g. #803932)"
-                value={sectionForm.cardBg}
-                onChange={(e) => setSectionForm({...sectionForm, cardBg: e.target.value})}
-                className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
-              />
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">Section Name</label>
+                <input
+                  placeholder="Food, Breakfast"
+                  value={sectionForm.name}
+                  onChange={(e) => setSectionForm({...sectionForm, name: e.target.value})}
+                  className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">Section Subtitle</label>
+                <input
+                  placeholder="Optional description"
+                  value={sectionForm.subtitle}
+                  onChange={(e) => setSectionForm({...sectionForm, subtitle: e.target.value})}
+                  className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">Card Background Color</label>
+                <input
+                  placeholder="#803932"
+                  value={sectionForm.cardBg}
+                  onChange={(e) => setSectionForm({...sectionForm, cardBg: e.target.value})}
+                  className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">Price Tag Background Color</label>
+                <input
+                  placeholder="#6c3a34"
+                  value={sectionForm.priceTagBg}
+                  onChange={(e) => setSectionForm({...sectionForm, priceTagBg: e.target.value})}
+                  className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">Item Card Background Color</label>
+                <input
+                  placeholder="#F4F0E7"
+                  value={sectionForm.itemCardBg}
+                  onChange={(e) => setSectionForm({...sectionForm, itemCardBg: e.target.value})}
+                  className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">Item Card Text Color</label>
+                <input
+                  placeholder="#000000"
+                  value={sectionForm.itemCardText}
+                  onChange={(e) => setSectionForm({...sectionForm, itemCardText: e.target.value})}
+                  className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium mb-2 text-white/90">Header Image</label>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
@@ -365,8 +406,8 @@ const handleToggleAvailability = async (sectionId, categoryId, itemId) => {
                 <button
                   type="button"
                   onClick={() => {
-                    setEditingSection(null)
-                    setSectionForm({ name: '', subtitle: '', cardBg: '', headerImage: '' })
+                  setEditingSection(null)
+                  setSectionForm({ name: '', subtitle: '', cardBg: '', headerImage: '', priceTagBg: '', itemCardBg: '', itemCardText: '' })
                     setSectionImageFile(null)
                     setSectionImagePreview(null)
                   }}
@@ -427,38 +468,50 @@ const handleToggleAvailability = async (sectionId, categoryId, itemId) => {
               )}
             </div>
 
-            <input
-              className="w-full p-4 rounded-2xl text-black text-lg font-semibold bg-white/95 focus:outline-none focus:ring-4 focus:ring-blue-400/60 shadow-lg"
-              placeholder="Item Name (e.g. Chicken Creamy Rosemary)"
-              value={form.name}
-              onChange={e => setForm({...form, name: e.target.value})}
-              required
-            />
+            <div>
+              <label className="block text-sm font-medium mb-2 text-white/90">Item Name</label>
+              <input
+                className="w-full p-4 rounded-2xl text-black text-lg font-semibold bg-white/95 focus:outline-none focus:ring-4 focus:ring-blue-400/60 shadow-lg"
+                placeholder="e.g. Chicken Creamy Rosemary"
+                value={form.name}
+                onChange={e => setForm({...form, name: e.target.value})}
+                required
+              />
+            </div>
 
-            <input
-              className="w-full p-4 rounded-2xl text-black text-lg font-semibold bg-white/95 focus:outline-none focus:ring-4 focus:ring-green-400/60 shadow-lg"
-              type="number"
-              placeholder="Price (36000)"
-              value={form.price}
-              onChange={e => setForm({...form, price: e.target.value})}
-              required
-            />
+            <div>
+              <label className="block text-sm font-medium mb-2 text-white/90">Price</label>
+              <input
+                className="w-full p-4 rounded-2xl text-black text-lg font-semibold bg-white/95 focus:outline-none focus:ring-4 focus:ring-green-400/60 shadow-lg"
+                type="number"
+                placeholder="36000"
+                value={form.price}
+                onChange={e => setForm({...form, price: e.target.value})}
+                required
+              />
+            </div>
 
-            <textarea
-              className="w-full p-4 rounded-2xl text-black text-base leading-relaxed bg-white/95 focus:outline-none focus:ring-4 focus:ring-purple-400/60 shadow-lg resize-vertical"
-              rows="3"
-              placeholder="Description Bahasa Indonesia"
-              value={form.descriptionId}
-              onChange={e => setForm({...form, descriptionId: e.target.value})}
-            />
+            <div>
+              <label className="block text-sm font-medium mb-2 text-white/90">Description (Bahasa Indonesia)</label>
+              <textarea
+                className="w-full p-4 rounded-2xl text-black text-base leading-relaxed bg-white/95 focus:outline-none focus:ring-4 focus:ring-purple-400/60 shadow-lg resize-vertical"
+                rows="3"
+                placeholder="Enter description in Indonesian"
+                value={form.descriptionId}
+                onChange={e => setForm({...form, descriptionId: e.target.value})}
+              />
+            </div>
 
-            <textarea
-              className="w-full p-4 rounded-2xl text-black text-sm leading-relaxed bg-white/95 focus:outline-none focus:ring-4 focus:ring-indigo-400/60 shadow-lg resize-vertical"
-              rows="2"
-              placeholder="Description English (optional)"
-              value={form.descriptionEn}
-              onChange={e => setForm({...form, descriptionEn: e.target.value})}
-            />
+            <div>
+              <label className="block text-sm font-medium mb-2 text-white/90">Description (English)</label>
+              <textarea
+                className="w-full p-4 rounded-2xl text-black text-sm leading-relaxed bg-white/95 focus:outline-none focus:ring-4 focus:ring-indigo-400/60 shadow-lg resize-vertical"
+                rows="2"
+                placeholder="Optional English description"
+                value={form.descriptionEn}
+                onChange={e => setForm({...form, descriptionEn: e.target.value})}
+              />
+            </div>
 
             <div className="flex gap-3 pt-2">
               <button

@@ -33,12 +33,12 @@
             },
             {
               "id": "chicken",
-              "name": "chicken",
+              "name": "chicken creamyy",
               "price": 18000,
               "descriptionId": "akowakowkaowk",
               "descriptionEn": "akwokawokawok",
               "image": "/images/1767344085000-556472261.jpg",
-              "isAvailable": false,
+              "isAvailable": true,
               "sortOrder": 1
             }
           ]
@@ -98,7 +98,12 @@
           "sortOrder": 4,
           "items": []
         }
-      ]
+      ],
+      "cardBg": "#803932",
+      "headerImage": "",
+      "priceTagBg": "#647767",
+      "itemCardBg": "#F4F0E7",
+      "itemCardText": "#000000"
     },
     {
       "id": "beverage",
@@ -148,7 +153,12 @@
           "sortOrder": 7,
           "items": []
         }
-      ]
+      ],
+      "cardBg": "#803932",
+      "headerImage": "",
+      "priceTagBg": "#363635",
+      "itemCardBg": "#ED473F",
+      "itemCardText": "#FFFFFF"
     }
   ]
 }
