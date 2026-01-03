@@ -155,7 +155,7 @@
               "descriptionId": "nasi goreng dengan bumbu khas, ayam dan sayuran disajikan bersama telur mata\nsapi, acar dan kerupuk.\n",
               "descriptionEn": "Indonesian fried rice cooked with special spices, chicken and vegetables served with\nsunny side up eggs, pickles and crackers.",
               "image": "/images/1767458079670-58142145.png",
-              "isAvailable": true,
+              "isAvailable": false,
               "sortOrder": 1
             },
             {
@@ -165,7 +165,7 @@
               "descriptionId": "olahan ayam bersantan yang dimasak dengan daun pisang ini punya cita rasa pedas,\ngurih dan asam disajikan bersama nasi dan emping.",
               "descriptionEn": "a coconut milk chicken dish cooked in banana leaves has a spicy, savory and sour\ntaste served with rice and gnemon seed crackers.",
               "image": "/images/1767458134669-587039857.png",
-              "isAvailable": true,
+              "isAvailable": false,
               "sortOrder": 1
             },
             {

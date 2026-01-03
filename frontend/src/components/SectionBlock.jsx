@@ -125,14 +125,14 @@ export default function SectionBlock({ section }) {
               <button
                 key={item.id}
                 onClick={() => setOpenItem(item)}
-                className={`group rounded-2xl ${style.itemCardBg} overflow-hidden border border-black/10 hover:border-black/20 transition-all duration-200 hover:scale-[1.02] shadow-[px_10px_15px_-3px_rgba(0,_0,_0,_0.1)] relative`}
+                className={`group rounded-2xl ${style.itemCardBg} overflow-hidden transition-all duration-200 hover:scale-[1.02] shadow-md relative`}
               >
                 <div className="h-28 relative overflow-hidden">
                   {item.image ? (
                     <img
                       src={`http://localhost:4001${item.image}`}
                       alt={item.name}
-                      className="rounded-2x2 h-full w-full object-cover hover:scale-110 transition-transform duration-300"
+                      className={`rounded-lg h-full w-full object-cover hover:scale-110 transition-transform duration-300 ${item.isAvailable === false ? 'grayscale' : ''}`}
                     />
                   ) : (
                     <div className="h-full w-full bg-gradient-to-br from-gray-300/50 to-gray-400/50 flex items-center justify-center">
@@ -199,7 +199,7 @@ export default function SectionBlock({ section }) {
         <Modal onClose={() => setOpenItem(null)}>
           <div className="absolute inset-0 h-full w-full">
             {openItem.image ? (
-              <img src={`http://localhost:4001${openItem.image}`} alt={openItem.name} className="h-full w-full object-cover" />
+              <img src={`http://localhost:4001${openItem.image}`} alt={openItem.name} className={`h-full w-full object-cover ${openItem.isAvailable === false ? 'grayscale' : ''}`} />
             ) : (
               <div className="h-full w-full bg-gradient-to-br from-gray-300/50 to-gray-400/50 flex items-center justify-center">
                 <span className="text-4xl">📸</span>
