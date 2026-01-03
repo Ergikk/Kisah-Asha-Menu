@@ -1,7 +1,9 @@
-# Task: Remove Edit Items Button from Categories and Auto-Detect Category for Item Edits
+# TODO: Fix GitHub Build by Consolidating Frontend
 
-## Steps to Complete:
-- [ ] Remove the "Edit Items" button from each category in the menu grid in Admin.jsx
-- [ ] Modify the handleEdit function to automatically set selected.sectionId and selected.categoryId based on the item's section and category
-- [ ] Test the edit functionality to ensure it works without selecting a category first
-- [ ] Verify that the form opens correctly and saving works as expected
+- [x] Move frontend/src/ to root/src/, overwriting duplicates
+- [x] Move frontend/public/ to root/public/, overwriting duplicates
+- [x] Move frontend/index.html to root/index.html, overwriting
+- [x] Update root/package.json to include dependencies from frontend/package.json
+- [x] Delete frontend/ folder
+- [x] Update vite.config.js if needed
+- [x] Test the build locally

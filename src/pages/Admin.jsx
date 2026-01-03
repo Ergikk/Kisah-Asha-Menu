@@ -21,6 +21,7 @@ export default function Admin() {
   const [categoryForm, setCategoryForm] = useState({ name: '' })
   const [adminLevel, setAdminLevel] = useState(() => localStorage.getItem('asha_admin_level') || 'main')
   const [showAddItemModal, setShowAddItemModal] = useState(false)
+  const [showManageSectionModal, setShowManageSectionModal] = useState(false)
   const [currentAction, setCurrentAction] = useState('add')
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -301,12 +302,12 @@ const handleDeleteSection = async (sectionId) => {
                         onClick={() => handleToggleAvailability(section.id, category.id, item.id)}
                         className={`px-3 py-2 text-white text-sm rounded-lg font-medium transition-all ${
                           item.isAvailable
-                            ? 'bg-orange-500/90 hover:bg-orange-600'
-                            : 'bg-green-500/90 hover:bg-green-600'
+                            ? 'bg-green-500/90 hover:bg-green-600'
+                            : 'bg-red-500/90 hover:bg-red-600'
                         }`}
                         title={item.isAvailable ? 'Mark as Sold Out' : 'Mark as Available'}
                       >
-                        {item.isAvailable ? '🔴' : '🟢'}
+                        {item.isAvailable ? '🟢' : '🔴'}
                       </button>
                       {adminLevel === 'main' && (
                         <>
@@ -338,8 +339,19 @@ const handleDeleteSection = async (sectionId) => {
         </div>
       )}
 
+      {adminLevel === 'main' && (
+        <div className="text-center mb-6">
+          <button
+            onClick={() => setShowManageSectionModal(true)}
+            className="bg-blue-500/90 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-2xl transition-all shadow-lg"
+          >
+            📁 Manage Sections
+          </button>
+        </div>
+      )}
+
       {/* Menu Grid - Responsive columns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 md:max-h-[600px] lg:max-h-[800px] overflow-y-auto">  {/* Taller on larger screens */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 md:max-h-[600px] lg:max-h-[1200px] overflow-y-auto">  {/* Taller on larger screens */}
         {menu.sections.map(section => (
           <div key={section.id} className="bg-black/30 backdrop-blur-sm p-4 rounded-2xl border border-white/20">
             <h3 className="font-bold text-lg mb-3 text-white/90">{section.name}</h3>
@@ -380,12 +392,12 @@ const handleDeleteSection = async (sectionId) => {
                           onClick={() => handleToggleAvailability(section.id, cat.id, item.id)}
                           className={`px-2 py-1 text-white text-xs rounded font-medium transition-all ${
                             item.isAvailable
-                              ? 'bg-orange-500/90 hover:bg-orange-600'
-                              : 'bg-green-500/90 hover:bg-green-600'
+                              ? 'bg-green-500/90 hover:bg-red-600'
+                              : 'bg-red-500/90 hover:bg-green-600'
                           }`}
                           title={item.isAvailable ? 'Mark as Sold Out' : 'Mark as Available'}
                         >
-                          {item.isAvailable ? '🔴' : '🟢'}
+                          {item.isAvailable ? '🟢' : '🔴'}
                         </button>
                         {adminLevel === 'main' && (
                           <>
@@ -422,145 +434,7 @@ const handleDeleteSection = async (sectionId) => {
         )}
       </div>
 
-      {adminLevel === 'main' && (
-        <>
-          <div className="bg-white/5 backdrop-blur p-4 md:p-6 rounded-2xl border border-white/20 mb-6 md:w-3/4 lg:w-1/2 mx-auto">
-            <h3 className="font-bold text-lg md:text-xl mb-4 text-center">📁 Manage Sections</h3>
 
-            {/* Add/Edit Section Form */}
-            <form onSubmit={editingSection ? handleUpdateSection : handleAddSection} className="space-y-3 mb-4 p-3 md:p-4 bg-black/20 rounded-xl">
-              <div>
-                <label className="block text-sm font-medium mb-2 text-white/90">Section Name</label>
-                <input
-                  placeholder="Food, Breakfast"
-                  value={sectionForm.name}
-                  onChange={(e) => setSectionForm({...sectionForm, name: e.target.value})}
-                  className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2 text-white/90">Section Subtitle</label>
-                <input
-                  placeholder="Optional description"
-                  value={sectionForm.subtitle}
-                  onChange={(e) => setSectionForm({...sectionForm, subtitle: e.target.value})}
-                  className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2 text-white/90">Card Background Color</label>
-                <input
-                  placeholder="#803932"
-                  value={sectionForm.cardBg}
-                  onChange={(e) => setSectionForm({...sectionForm, cardBg: e.target.value})}
-                  className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2 text-white/90">Price Tag Background Color</label>
-                <input
-                  placeholder="#6c3a34"
-                  value={sectionForm.priceTagBg}
-                  onChange={(e) => setSectionForm({...sectionForm, priceTagBg: e.target.value})}
-                  className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2 text-white/90">Item Card Background Color</label>
-                <input
-                  placeholder="#F4F0E7"
-                  value={sectionForm.itemCardBg}
-                  onChange={(e) => setSectionForm({...sectionForm, itemCardBg: e.target.value})}
-                  className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2 text-white/90">Item Card Text Color</label>
-                <input
-                  placeholder="#000000"
-                  value={sectionForm.itemCardText}
-                  onChange={(e) => setSectionForm({...sectionForm, itemCardText: e.target.value})}
-                  className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2 text-white/90">Header Image</label>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleSectionImageChange}
-                    className="file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gradient-to-r file:from-[#e44b4b] file:to-red-600 file:text-white hover:file:from-red-600 hover:file:to-red-700 cursor-pointer flex-1 w-full text-sm text-white/70 file:transition-all"
-                  />
-                  {sectionImagePreview && (
-                    <img src={sectionImagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-white/50 shadow-lg flex-shrink-0" />
-                  )}
-                </div>
-                {sectionForm.headerImage && !sectionImageFile && (
-                  <div className="mt-2 text-xs opacity-75 text-white/80">
-                    Current: <a href={`http://localhost:4001${sectionForm.headerImage}`} target="_blank" className="underline hover:text-blue-400">View</a>
-                  </div>
-                )}
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-green-500/90 hover:bg-green-600 text-white font-bold py-3 rounded-xl"
-              >
-                {editingSection ? 'Update Section' : 'Add Section'}
-              </button>
-              {editingSection && (
-                <button
-                  type="button"
-                  onClick={() => {
-                  setEditingSection(null)
-                  setSectionForm({ name: '', subtitle: '', cardBg: '', headerImage: '', priceTagBg: '', itemCardBg: '', itemCardText: '' })
-                    setSectionImageFile(null)
-                    setSectionImagePreview(null)
-                  }}
-                  className="w-full bg-gray-500/80 hover:bg-gray-600 text-white py-3 rounded-xl"
-                >
-                  Cancel
-                </button>
-              )}
-            </form>
-
-            {/* Section List */}
-            <div className="space-y-2 max-h-40 overflow-y-auto">
-              {getFilteredMenu().sections.map((section) => (
-                <div key={section.id} className="flex items-center justify-between p-3 bg-white/10 rounded-xl">
-                  <span className="font-semibold text-sm">{section.name}</span>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEditSection(section)}
-                      className="text-xs px-2 py-1 bg-blue-500/80 hover:bg-blue-600 text-white rounded-lg"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteSection(section.id)}
-                      className="text-xs px-2 py-1 bg-red-500/80 hover:bg-red-600 text-white rounded-lg"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-
-        </>
-      )}
-
-      {status && (
-        <div className={`p-4 rounded-2xl text-center font-medium text-sm shadow-lg transition-all ${
-          status.includes('✅') ? 'bg-green-500/30 border-2 border-green-500/50 text-green-100' :
-          status.includes('❌') ? 'bg-red-500/30 border-2 border-red-500/50 text-red-100' :
-          'bg-blue-500/30 border-2 border-blue-500/50 text-blue-100'
-        }`}>
-          {status}
-        </div>
-      )}
 
       {/* Add Item Modal */}
       {showAddItemModal && (
@@ -664,6 +538,143 @@ const handleDeleteSection = async (sectionId) => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Section Modal */}
+      {showManageSectionModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowManageSectionModal(false)}>
+          <div className="bg-gradient-to-br from-black/40 to-black/60 backdrop-blur-md p-6 rounded-3xl border-2 border-white/20 space-y-4 w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center">
+              <h3 className="font-bold text-xl text-white/95">📁 Manage Sections</h3>
+              <button
+                onClick={() => setShowManageSectionModal(false)}
+                className="text-white/70 hover:text-white text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Add/Edit Section Form */}
+            <form onSubmit={editingSection ? handleUpdateSection : handleAddSection} className="space-y-3 mb-4 p-3 md:p-4 bg-black/20 rounded-xl">
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">Section Name</label>
+                <input
+                  placeholder="Food, Breakfast"
+                  value={sectionForm.name}
+                  onChange={(e) => setSectionForm({...sectionForm, name: e.target.value})}
+                  className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">Section Subtitle</label>
+                <input
+                  placeholder="Optional description"
+                  value={sectionForm.subtitle}
+                  onChange={(e) => setSectionForm({...sectionForm, subtitle: e.target.value})}
+                  className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">Card Background Color</label>
+                <input
+                  placeholder="#803932"
+                  value={sectionForm.cardBg}
+                  onChange={(e) => setSectionForm({...sectionForm, cardBg: e.target.value})}
+                  className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">Price Tag Background Color</label>
+                <input
+                  placeholder="#6c3a34"
+                  value={sectionForm.priceTagBg}
+                  onChange={(e) => setSectionForm({...sectionForm, priceTagBg: e.target.value})}
+                  className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">Item Card Background Color</label>
+                <input
+                  placeholder="#F4F0E7"
+                  value={sectionForm.itemCardBg}
+                  onChange={(e) => setSectionForm({...sectionForm, itemCardBg: e.target.value})}
+                  className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">Item Card Text Color</label>
+                <input
+                  placeholder="#000000"
+                  value={sectionForm.itemCardText}
+                  onChange={(e) => setSectionForm({...sectionForm, itemCardText: e.target.value})}
+                  className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/70"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">Header Image</label>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleSectionImageChange}
+                    className="file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gradient-to-r file:from-[#e44b4b] file:to-red-600 file:text-white hover:file:from-red-600 hover:file:to-red-700 cursor-pointer flex-1 w-full text-sm text-white/70 file:transition-all"
+                  />
+                  {sectionImagePreview && (
+                    <img src={sectionImagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-white/50 shadow-lg flex-shrink-0" />
+                  )}
+                </div>
+                {sectionForm.headerImage && !sectionImageFile && (
+                  <div className="mt-2 text-xs opacity-75 text-white/80">
+                    Current: <a href={`http://localhost:4001${sectionForm.headerImage}`} target="_blank" className="underline hover:text-blue-400">View</a>
+                  </div>
+                )}
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-green-500/90 hover:bg-green-600 text-white font-bold py-3 rounded-xl"
+              >
+                {editingSection ? 'Update Section' : 'Add Section'}
+              </button>
+              {editingSection && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingSection(null)
+                    setSectionForm({ name: '', subtitle: '', cardBg: '', headerImage: '', priceTagBg: '', itemCardBg: '', itemCardText: '' })
+                    setSectionImageFile(null)
+                    setSectionImagePreview(null)
+                  }}
+                  className="w-full bg-gray-500/80 hover:bg-gray-600 text-white py-3 rounded-xl"
+                >
+                  Cancel
+                </button>
+              )}
+            </form>
+
+            {/* Section List */}
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {getFilteredMenu().sections.map((section) => (
+                <div key={section.id} className="flex items-center justify-between p-3 bg-white/10 rounded-xl">
+                  <span className="font-semibold text-sm">{section.name}</span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleEditSection(section)}
+                      className="text-xs px-2 py-1 bg-blue-500/80 hover:bg-blue-600 text-white rounded-lg"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteSection(section.id)}
+                      className="text-xs px-2 py-1 bg-red-500/80 hover:bg-red-600 text-white rounded-lg"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

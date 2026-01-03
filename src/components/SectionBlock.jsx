@@ -176,9 +176,10 @@ export default function SectionBlock({ section }) {
         {/* Food Section Footer - Only when expanded */}
         {section.id === 'food' && (
           <div className="px-8 py-4 text-black rounded-b-3xl" style={{ backgroundColor: style.cardBg }}>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="text-sm font-normal italic">Additional</div>
-              <img src="/stars-black.png" alt="Stars and Line" className="h-4" />
+            <div className="flex items-center mb-2">
+              <div className="text-sm font-normal italic" style={{ marginRight: '30px' }}>Additional</div>
+              <div className="flex-1 h-px bg-[#222222]"></div>
+              <img src="/stars-black.png" alt="Stars and Line" className="h-4 ml-3" />
             </div>
             <div className="flex items-center justify-between mb-1">
               <div className="text-sm font-normal">Nasi</div>
