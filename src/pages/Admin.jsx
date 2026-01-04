@@ -222,12 +222,37 @@ const handleDeleteSection = async (sectionId) => {
 }
 
   const handleToggleAvailability = async (sectionId, categoryId, itemId) => {
+    // Optimistically update local state for immediate UI feedback
+    setMenu(prevMenu => ({
+      ...prevMenu,
+      sections: prevMenu.sections.map(section =>
+        section.id === sectionId
+          ? {
+              ...section,
+              categories: section.categories.map(category =>
+                category.id === categoryId
+                  ? {
+                      ...category,
+                      items: category.items.map(item =>
+                        item.id === itemId
+                          ? { ...item, isAvailable: !item.isAvailable }
+                          : item
+                      )
+                    }
+                  : category
+              )
+            }
+          : section
+      )
+    }));
+
     try {
-      await toggleItemAvailability(sectionId, categoryId, itemId)
-      setMenu(await getMenu())
-      alert('Item availability updated!')
+      await toggleItemAvailability(sectionId, categoryId, itemId);
+      alert('Item availability updated!');
     } catch (error) {
-      alert('Toggle availability failed')
+      alert('Toggle availability failed');
+      // Revert to server state on failure
+      setMenu(await getMenu());
     }
   }
 
@@ -266,23 +291,27 @@ const handleDeleteSection = async (sectionId) => {
         />
       </div>
 
-      {/* Selected Section and Manage Button */}
-      <div className="flex gap-3 md:gap-12 mb-6">
-        <div className="w-3/4 pt-2">
-          <div className="text-sm opacity-75 text-left">
-            Selected: <span className="font-mono bg-white/20 px-2 py-1 rounded">
-              {selected.sectionId ? menu.sections.find(s => s.id === selected.sectionId)?.name : '—'} /
-              {selected.categoryId ? menu.sections.flatMap(s => s.categories).find(c => c.id === selected.categoryId)?.name : '—'}
-            </span>
+      {adminLevel === 'main' && (
+        <>
+          {/* Selected Section and Manage Button */}
+          <div className="flex gap-3 md:gap-12 mb-6">
+            <div className="w-3/4 pt-2">
+              <div className="text-sm opacity-75 text-left">
+                Selected: <span className="font-mono bg-white/20 px-2 py-1 rounded">
+                  {selected.sectionId ? menu.sections.find(s => s.id === selected.sectionId)?.name : '—'} /
+                  {selected.categoryId ? menu.sections.flatMap(s => s.categories).find(c => c.id === selected.categoryId)?.name : '—'}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowManageSectionModal(true)}
+              className="w-1/4 bg-green-500/90 hover:bg-green-600 text-white font-bold py-3 md:py-4 rounded-2xl text-sm md:text-lg shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-400/60"
+            >
+              Manage Sections
+            </button>
           </div>
-        </div>
-        <button
-          onClick={() => setShowManageSectionModal(true)}
-          className="w-1/4 bg-green-500/90 hover:bg-green-600 text-white font-bold py-3 md:py-4 rounded-2xl text-sm md:text-lg shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-400/60"
-        >
-          Manage Sections
-        </button>
-      </div>
+        </>
+      )}
 
       {/* Search Results */}
       {searchQuery.trim() && (
@@ -292,7 +321,7 @@ const handleDeleteSection = async (sectionId) => {
             {getFilteredMenu().sections.flatMap(section =>
               section.categories.flatMap(category =>
                 category.items.map(item => (
-                  <div key={`${section.id}-${category.id}-${item.id}`} className="flex items-center justify-between p-4 bg-white/10 rounded-xl border border-white/20 hover:bg-white/20 transition-all">
+                  <div key={`${section.id}-${category.id}-${item.id}-${item.isAvailable}`} className="flex items-center justify-between p-4 bg-white/10 rounded-xl border border-white/20 hover:bg-white/20 transition-all">
                     <div className="flex items-center space-x-4 flex-1 min-w-0">
                       {item.image ? (
                         <img src={`http://localhost:4001${item.image}`} alt={item.name} className="w-16 h-16 rounded-lg object-cover border border-white/50 flex-shrink-0" />
@@ -307,15 +336,16 @@ const handleDeleteSection = async (sectionId) => {
                     </div>
                     <div className="flex gap-2">
                       <button
+                        key={`${item.id}-${item.isAvailable}`}
                         onClick={() => handleToggleAvailability(section.id, category.id, item.id)}
-                        className={`px-3 py-2 text-white text-sm rounded-lg font-medium transition-all ${
+                        className={`px-2 py-1 text-white text-xs rounded font-medium transition-all ${
                           item.isAvailable
-                            ? 'bg-green-500/90 hover:bg-green-600'
-                            : 'bg-red-500/90 hover:bg-red-600'
+                            ? 'bg-green-500/90 hover:bg-red-600'
+                            : 'bg-red-500/90 hover:bg-green-600'
                         }`}
                         title={item.isAvailable ? 'Mark as Sold Out' : 'Mark as Available'}
                       >
-                        {item.isAvailable ? '🟢' : '🔴'}
+                        {item.isAvailable ? 'Available' : 'Soldout'}
                       </button>
                       {adminLevel === 'main' && (
                         <>
@@ -390,6 +420,7 @@ const handleDeleteSection = async (sectionId) => {
                       </div>
                       <div className="flex gap-1">
                         <button
+                          key={`${item.id}-${item.isAvailable}`}
                           onClick={() => handleToggleAvailability(section.id, cat.id, item.id)}
                           className={`px-2 py-1 text-white text-xs rounded font-medium transition-all ${
                             item.isAvailable
