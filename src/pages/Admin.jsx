@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import ReactDOM from 'react-dom'
 import { getMenu, saveItem, deleteItem, addSection, updateSection, deleteSection, addCategory, toggleItemAvailability } from '../api/client.js'
 
 export default function Admin() {
@@ -49,13 +50,13 @@ export default function Admin() {
 
   const handleSave = async (e) => {
     e.preventDefault()
-    if (!selected.sectionId || !selected.categoryId) return alert('❌ Select section/category first')
+    if (!selected.sectionId || !selected.categoryId) return alert('Select section/category first')
 
     try {
       let finalItem = {
         ...form,
         id: form.id || form.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
-        price: Number(form.price),
+        price: Number(form.price.replace(/[,.]/g, '')),
         isAvailable: true,
         sortOrder: 1
       }
@@ -66,10 +67,10 @@ export default function Admin() {
 
       await saveItem(selected.sectionId, selected.categoryId, finalItem)
       setMenu(await getMenu())
-      alert('✅ Saved successfully!')
+      alert('Saved successfully!')
       resetForm()
     } catch (error) {
-      alert('❌ Save failed: ' + error.message)
+      alert('Save failed: ' + error.message)
     }
   }
 
@@ -94,10 +95,10 @@ export default function Admin() {
     try {
       await deleteItem(sectionId, categoryId, itemId)
       setMenu(await getMenu())
-      alert('✅ Deleted!')
+      alert('Deleted!')
       resetForm()
     } catch {
-      alert('❌ Delete failed')
+      alert('Delete failed')
     }
   }
 
@@ -149,12 +150,12 @@ const handleAddSection = async (e) => {
 
     await addSection(finalSection)
     setMenu(await getMenu())
-    alert('✅ Section added!')
+    alert('Section added!')
     setSectionForm({ name: '', subtitle: '', cardBg: '', headerImage: '', priceTagBg: '', itemCardBg: '', itemCardText: '' })
     setSectionImageFile(null)
     setSectionImagePreview(null)
   } catch (error) {
-    alert('❌ Add section failed: ' + error.message)
+    alert('Add section failed: ' + error.message)
   }
 }
 
@@ -185,13 +186,13 @@ const handleUpdateSection = async (e) => {
 
     await updateSection(editingSection.id, finalSection)
     setMenu(await getMenu())
-    alert('✅ Section updated!')
+    alert('Section updated!')
                   setEditingSection(null)
                   setSectionForm({ name: '', subtitle: '', cardBg: '', headerImage: '', priceTagBg: '', itemCardBg: '' })
     setSectionImageFile(null)
     setSectionImagePreview(null)
   } catch (error) {
-    alert('❌ Update failed')
+    alert('Update failed')
   }
 }
 
@@ -202,10 +203,10 @@ const handleAddCategory = async (sectionId) => {
       name: categoryForm.name
     })
     setMenu(await getMenu())
-    setStatus('✅ Category added!')
+    setStatus('Category added!')
     setCategoryForm({ name: '' })
   } catch (error) {
-    setStatus('❌ Add category failed')
+    setStatus('Add category failed')
   }
 }
 
@@ -214,9 +215,9 @@ const handleDeleteSection = async (sectionId) => {
   try {
     await deleteSection(sectionId)
     setMenu(await getMenu())
-    alert('✅ Section deleted!')
+    alert('Section deleted!')
   } catch (error) {
-    alert('❌ Delete section failed')
+    alert('Delete section failed')
   }
 }
 
@@ -224,9 +225,9 @@ const handleDeleteSection = async (sectionId) => {
     try {
       await toggleItemAvailability(sectionId, categoryId, itemId)
       setMenu(await getMenu())
-      alert('✅ Item availability updated!')
+      alert('Item availability updated!')
     } catch (error) {
-      alert('❌ Toggle availability failed')
+      alert('Toggle availability failed')
     }
   }
 
@@ -254,26 +255,33 @@ const handleDeleteSection = async (sectionId) => {
   return (
     <div className="w-full mx-auto p-4 space-y-6 min-h-screen pb-20">  {/* Responsive width */}
       {/* Header (no duplicate - App.jsx handles) */}
-      <div className="pt-2">
-        <div className="text-sm opacity-75 text-center">
-          Selected: <span className="font-mono bg-white/20 px-2 py-1 rounded">
-            {selected.sectionId ? menu.sections.find(s => s.id === selected.sectionId)?.name : '—'} /
-            {selected.categoryId ? menu.sections.flatMap(s => s.categories).find(c => c.id === selected.categoryId)?.name : '—'}
-          </span>
-        </div>
+      {/* Search Bar */}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search items..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full p-3 md:p-4 rounded-2xl text-black text-base md:text-lg bg-white/95 focus:outline-none focus:ring-4 focus:ring-blue-400/60 shadow-lg"
+        />
       </div>
 
-      {/* Search Bar */}
-      <div className="mb-4">
-        <div className="max-w-md mx-auto">
-          <input
-            type="text"
-            placeholder="Search items across all categories..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full p-3 rounded-2xl bg-white/20 border border-white/30 text-white placeholder-white/70 focus:outline-none focus:ring-4 focus:ring-blue-400/60 shadow-lg"
-          />
+      {/* Selected Section and Manage Button */}
+      <div className="flex gap-3 md:gap-12 mb-6">
+        <div className="w-3/4 pt-2">
+          <div className="text-sm opacity-75 text-left">
+            Selected: <span className="font-mono bg-white/20 px-2 py-1 rounded">
+              {selected.sectionId ? menu.sections.find(s => s.id === selected.sectionId)?.name : '—'} /
+              {selected.categoryId ? menu.sections.flatMap(s => s.categories).find(c => c.id === selected.categoryId)?.name : '—'}
+            </span>
+          </div>
         </div>
+        <button
+          onClick={() => setShowManageSectionModal(true)}
+          className="w-1/4 bg-green-500/90 hover:bg-green-600 text-white font-bold py-3 md:py-4 rounded-2xl text-sm md:text-lg shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-400/60"
+        >
+          Manage Sections
+        </button>
       </div>
 
       {/* Search Results */}
@@ -316,14 +324,14 @@ const handleDeleteSection = async (sectionId) => {
                             className="px-2 py-1 bg-blue-500/90 hover:bg-blue-600 text-white text-xs rounded font-medium transition-all"
                             title="Edit"
                           >
-                            ✏️
+                            Edit
                           </button>
                           <button
                             onClick={() => handleDelete(section.id, category.id, item.id)}
                             className="px-2 py-1 bg-red-500/90 hover:bg-red-600 text-white text-xs rounded font-medium transition-all"
                             title="Delete"
                           >
-                            🗑️
+                            Delete
                           </button>
                         </>
                       )}
@@ -339,16 +347,7 @@ const handleDeleteSection = async (sectionId) => {
         </div>
       )}
 
-      {adminLevel === 'main' && (
-        <div className="text-center mb-6">
-          <button
-            onClick={() => setShowManageSectionModal(true)}
-            className="bg-blue-500/90 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-2xl transition-all shadow-lg"
-          >
-            📁 Manage Sections
-          </button>
-        </div>
-      )}
+
 
       {/* Menu Grid - Responsive columns */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 ">  {/* Taller on larger screens */}
@@ -399,7 +398,7 @@ const handleDeleteSection = async (sectionId) => {
                           }`}
                           title={item.isAvailable ? 'Mark as Sold Out' : 'Mark as Available'}
                         >
-                          {item.isAvailable ? '🟢' : '🔴'}
+                          {item.isAvailable ? 'Available' : 'Soldout'}
                         </button>
                         {adminLevel === 'main' && (
                           <>
@@ -408,14 +407,14 @@ const handleDeleteSection = async (sectionId) => {
                               className="px-2 py-1 bg-blue-500/90 hover:bg-blue-600 text-white text-xs rounded font-medium transition-all"
                               title="Edit"
                             >
-                              ✏️
+                              Edit
                             </button>
                             <button
                               onClick={() => handleDelete(section.id, cat.id, item.id)}
                               className="px-2 py-1 bg-red-500/90 hover:bg-red-600 text-white text-xs rounded font-medium transition-all"
                               title="Delete"
                             >
-                              🗑️
+                              Delete
                             </button>
                           </>
                         )}
@@ -545,11 +544,11 @@ const handleDeleteSection = async (sectionId) => {
       )}
 
       {/* Manage Section Modal */}
-      {showManageSectionModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowManageSectionModal(false)}>
-          <div className="bg-gradient-to-br from-black/40 to-black/60 backdrop-blur-md p-6 rounded-3xl border-2 border-white/20 space-y-4 w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      {showManageSectionModal && ReactDOM.createPortal(
+        <div className="fixed inset-0 z-50 bg-[#6f7f72] backdrop-blur-sm flex items-center justify-center" onClick={() => setShowManageSectionModal(false)}>
+          <div className="bg-gradient-to-br from-black/40 to-black/60 backdrop-blur-md p-10 rounded-3xl border-2 border-white/20 space-y-4 w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center">
-              <h3 className="font-bold text-xl text-white/95">📁 Manage Sections</h3>
+              <h3 className="font-bold text-xl text-white/95">Manage Sections</h3>
               <button
                 onClick={() => setShowManageSectionModal(false)}
                 className="text-white/70 hover:text-white text-2xl font-bold"
@@ -658,7 +657,7 @@ const handleDeleteSection = async (sectionId) => {
             {/* Section List */}
             <div className="space-y-2 max-h-40 overflow-y-auto">
               {getFilteredMenu().sections.map((section) => (
-                <div key={section.id} className="flex items-center justify-between p-3 bg-white/10 rounded-xl">
+                <div key={section.id} className="text-white flex items-center justify-between p-3 bg-white/10 rounded-xl">
                   <span className="font-semibold text-sm">{section.name}</span>
                   {adminLevel === 'main' && (
                     <div className="flex gap-2">
@@ -680,7 +679,8 @@ const handleDeleteSection = async (sectionId) => {
               ))}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
